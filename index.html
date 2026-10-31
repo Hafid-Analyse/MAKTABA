@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>المكتبة</title>
+<meta name="theme-color" content="#16213a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Tajawal:wght@400;500;700;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+/* ===== الإعداد الوحيد المطلوب: رابط تطبيق الويب من Apps Script ===== */
+const API_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+</script>
+<style>
+:root{
+  --navy:#16213a; --navy-2:#24335a; --bg:#f3f1ec; --surface:#fffdf9; --line:#e2ddd1; --fg:#1c2433; --muted:#636b78;
+  --brass:#b0802f; --brass-soft:#f5ead6;
+  --ok:#1f6b45; --ok-soft:#dcefe3; --out:#33549a; --out-soft:#e1e8f6; --bad:#a6332e; --bad-soft:#f8e1df; --gone:#666; --gone-soft:#ececec;
+  --display:"Amiri",serif; --body:"Tajawal",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#10141d; --surface:#181e2b; --line:#2a3245; --fg:#e8ebf1; --muted:#9aa3b3; --brass-soft:#3a2f1c;
+  --ok:#7fd1a4; --ok-soft:#173326; --out:#9db6ee; --out-soft:#1c2740; --bad:#f0928b; --bad-soft:#3b1f1e; --gone:#aaa; --gone-soft:#2a2a2a; color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.55}
+button,input,select,textarea{font:inherit;color:inherit}
+.top{background:var(--navy);color:#fff;padding:calc(14px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 18px max(16px,env(safe-area-inset-left,0px))}
+.top .in{max-width:760px;margin:0 auto}
+.top .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.top small{color:#d9b66a;font-weight:700;font-size:12px}
+.top h1{font-family:var(--display);font-size:30px;margin:0;line-height:1.25}
+.who{border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.who.on{background:var(--brass);border-color:var(--brass)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.stat{background:var(--navy-2);border-radius:10px;padding:6px 10px}
+.stat b{display:block;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.stat span{font-size:11.5px;color:#c4cbe0}
+.wrap{max-width:760px;margin:0 auto;padding:14px max(16px,env(safe-area-inset-right,0px)) 120px max(16px,env(safe-area-inset-left,0px))}
+.search{display:flex;gap:8px}
+.search input{flex:1;min-width:0}
+input,select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+.btn{border:0;border-radius:10px;padding:10px 16px;font-weight:800;cursor:pointer;background:var(--navy);color:#fff;white-space:nowrap}
+.btn.brass{background:var(--brass)} .btn.ok{background:var(--ok);color:#fff} .btn.bad{background:var(--bad);color:#fff}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--fg)}
+.btn.sm{padding:6px 12px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:default}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:10px 0 4px}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.book{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;text-align:start;width:100%}
+.num{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;font-weight:700;background:var(--brass-soft);color:var(--brass);border-radius:6px;padding:3px 7px;direction:ltr}
+.book .t{font-weight:800;line-height:1.35}
+.book .m{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.book>div{min-width:0}
+.pill{font-size:12px;font-weight:800;border-radius:999px;padding:2px 10px;white-space:nowrap}
+.s-متوفر{background:var(--ok-soft);color:var(--ok)} .s-معار{background:var(--out-soft);color:var(--out)}
+.s-تالف{background:var(--bad-soft);color:var(--bad)} .s-مفقود{background:var(--gone-soft);color:var(--gone)}
+.late{background:var(--bad-soft);color:var(--bad)}
+.empty{text-align:center;color:var(--muted);border:1.5px dashed var(--line);border-radius:14px;padding:30px 14px;margin-top:10px}
+.empty b{display:block;color:var(--fg);font-size:16px}
+.notice{background:var(--brass-soft);color:var(--fg);border-radius:10px;padding:10px 12px;font-size:13.5px;border-inline-start:4px solid var(--brass)}
+.nav{position:fixed;inset:auto 0 0 0;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:center;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));z-index:5}
+.nav .in{display:flex;gap:4px;max-width:760px;width:100%}
+.nav button{flex:1;border:0;background:transparent;border-radius:10px;padding:6px 2px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.nav button i{font-style:normal;font-size:18px}
+.nav button[aria-current="true"]{color:var(--navy);background:var(--brass-soft)}
+@media (prefers-color-scheme:dark){.nav button[aria-current="true"]{color:var(--fg)}}
+.scrim{position:fixed;inset:0;background:rgba(10,15,25,.5);z-index:20}
+.sheet{position:fixed;inset:auto 0 0 0;z-index:21;background:var(--surface);border-radius:18px 18px 0 0;max-height:90vh;overflow-y:auto;max-width:760px;margin:0 auto;padding:10px max(18px,env(safe-area-inset-right,0px)) calc(22px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px))}
+.grab{width:42px;height:4px;background:var(--line);border-radius:2px;margin:0 auto 10px}
+.sheet h2{font-family:var(--display);font-size:24px;margin:0 0 4px;line-height:1.3}
+.form{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.kv{display:grid;grid-template-columns:90px 1fr;gap:4px 10px;margin:10px 0}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:500;overflow-wrap:anywhere}
+.hist{display:flex;flex-direction:column;gap:6px;font-size:13px;margin-top:6px}
+.hist div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-bottom:5px;flex-wrap:wrap}
+.by{font-size:12px;color:var(--muted)}
+.qrbox{display:flex;gap:12px;align-items:center;background:var(--bg);border-radius:12px;padding:10px;margin-top:10px}
+.qrbox .q{background:#fff;padding:6px;border-radius:8px;line-height:0}
+#reader{width:100%;border-radius:12px;overflow:hidden;background:#000}
+.loan{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center}
+.loan.is-late{border-color:var(--bad);box-shadow:inset -4px 0 0 var(--bad)}
+.loan .m{font-size:13px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+h3{font-size:15px;margin:18px 0 8px;color:var(--muted)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:7px 6px;text-align:start;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:12px;color:var(--muted)}
+td.n{font-variant-numeric:tabular-nums}
+.badge{font-size:11px;font-weight:800;border-radius:999px;padding:1px 7px}
+.fast{background:var(--ok-soft);color:var(--ok)} .slow{background:var(--bad-soft);color:var(--bad)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:9px 18px;border-radius:999px;font-weight:700;z-index:40;max-width:90vw;text-align:center}
+.toast.err{background:var(--bad);color:#fff}
+.loading{opacity:.6;pointer-events:none}
+/* ملصقات الطباعة */
+#print{display:none}
+@media print{
+  body{background:#fff} body>*:not(#print){display:none!important}
+  #print{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm;padding:6mm}
+  @page{size:A4;margin:6mm}
+}
+.label{border:1px dashed #999;border-radius:3mm;padding:3mm;display:flex;gap:3mm;align-items:center;break-inside:avoid;color:#000;background:#fff;height:34mm;overflow:hidden}
+.label .q{line-height:0;flex:0 0 auto}
+.label .tx{min-width:0;font-family:var(--body)}
+.label .lt{font-weight:800;font-size:10.5pt;line-height:1.25;max-height:2.6em;overflow:hidden}
+.label .ln{font-family:ui-monospace,Menlo,monospace;font-weight:800;font-size:11pt;direction:ltr;text-align:right}
+.label .ll{font-size:8pt;color:#555}
+#preview{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:10px}
+@media (max-width:420px){.stats{grid-template-columns:repeat(2,1fr)}.row2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="in">
+  <div class="row">
+    <div><small>فهرس وإعارة</small><h1 id="libName">المكتبة</h1></div>
+    <button class="who" id="whoBtn">دخول الأمين</button>
+  </div>
+  <div class="stats">
+    <div class="stat"><b id="sAll">–</b><span>نسخة</span></div>
+    <div class="stat"><b id="sAv">–</b><span>متوفر</span></div>
+    <div class="stat"><b id="sOut">–</b><span>معار</span></div>
+    <div class="stat"><b id="sLate">–</b><span>متأخر</span></div>
+  </div>
+</div></header>
+
+<main class="wrap" id="main"><div class="empty"><b>جارٍ تحميل الفهرس…</b></div></main>
+
+<nav class="nav" id="nav" hidden><div class="in">
+  <button data-v="catalog"><i>📚</i>الفهرس</button>
+  <button data-v="scan"><i>⌖</i>مسح</button>
+  <button data-v="out"><i>↗</i>في الخارج</button>
+  <button data-v="add"><i>＋</i>إضافة</button>
+  <button data-v="labels"><i>▦</i>ملصقات</button>
+  <button data-v="reports"><i>▤</i>تقارير</button>
+</div></nav>
+
+<div id="sheetRoot"></div>
+<div id="print"></div>
+
+<script>
+/* ================= الحالة ================= */
+const S = { settings:null, books:[], loans:null, view:"catalog", q:"", status:"", cat:"",
+  user:null, pin:null, scanner:null };
+try{ const a=JSON.parse(localStorage.getItem("lib_auth")||"null"); if(a){S.user=a.user;S.pin=a.pin} }catch{}
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const addDays=(s,n)=>{const d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
+const days=(a,b)=>Math.round((new Date(b+"T12:00:00")-new Date(a+"T12:00:00"))/864e5);
+const fmt=s=>{if(!s)return"";const[y,m,d]=s.split("-");return `${+d}/${+m}/${y}`};
+const staff=()=>!!S.user;
+const bookUrl=n=>(S.settings?.appUrl||location.origin+location.pathname)+"?b="+encodeURIComponent(n);
+
+/* ================= الاتصال بالشيت ================= */
+async function api(action,data={},asStaff=false){
+  if(!API_URL||API_URL.startsWith("PASTE")) throw new Error("لم يُضبط رابط Apps Script في الملف بعد");
+  const body={action,...data}; if(asStaff){body.user=S.user;body.pin=S.pin}
+  const r=await fetch(API_URL,{method:"POST",body:JSON.stringify(body)});
+  const j=await r.json();
+  if(!j.ok) throw new Error(j.error||"خطأ غير معروف");
+  return j;
+}
+async function load(){
+  try{
+    const j=await api("init"); S.settings=j.settings; S.books=j.books;
+    $("#libName").textContent=S.settings.name; document.title=S.settings.name;
+    if(staff()) await loadLoans();
+    stats(); render();
+    const b=new URLSearchParams(location.search).get("b"); if(b){openBook(b);history.replaceState(null,"",location.pathname)}
+  }catch(e){ $("#main").innerHTML=`<div class="empty"><b>تعذّر تحميل الفهرس</b>${esc(e.message)}</div>` }
+}
+async function loadLoans(){ try{ S.loans=(await api("loans",{},true)).loans }catch(e){ if(/الرمز/.test(e.message)) logout(); } }
+
+/* ================= العرض ================= */
+function stats(){
+  const c={all:S.books.length,av:0,out:0,late:0};
+  S.books.forEach(b=>{if(b.status==="متوفر")c.av++;if(b.status==="معار")c.out++});
+  if(S.loans) c.late=S.loans.filter(l=>!l.ret&&l.due&&l.due<today()).length;
+  $("#sAll").textContent=c.all;$("#sAv").textContent=c.av;$("#sOut").textContent=c.out;$("#sLate").textContent=S.loans?c.late:"–";
+  const w=$("#whoBtn"); w.textContent=staff()?"الأمين: "+S.user:"دخول الأمين"; w.classList.toggle("on",staff());
+  $("#nav").hidden=!staff();
+  document.querySelectorAll("#nav button").forEach(b=>b.setAttribute("aria-current",b.dataset.v===S.view));
+}
+function render(){
+  if(S.view!=="scan") stopScan();
+  const v={catalog,scan:scanView,out:outView,add:addView,labels:labelsView,reports:reportsView}[S.view]||catalog;
+  $("#main").innerHTML=v(); stats();
+  if(S.view==="scan") startScan();
+  if(S.view==="labels") drawLabelPreview();
+}
+function pill(s){return `<span class="pill s-${esc(s)}">${esc(s)}</span>`}
+function bookRow(b){
+  return `<button class="book" data-open="${esc(b.num)}"><span class="num">${esc(b.num)}</span>
+  <div><div class="t">${esc(b.title)}</div><div class="m">${esc([b.author,b.publisher].filter(Boolean).join(" · "))||"—"}</div></div>${pill(b.status)}</button>`;
+}
+function catalog(){
+  const q=S.q.trim().toLowerCase();
+  let list=S.books.filter(b=>(!S.status||b.status===S.status)&&(!S.cat||b.category===S.cat)&&
+    (!q||[b.num,b.title,b.author,b.publisher,b.translator].join(" ").toLowerCase().includes(q)));
+  list.sort((a,b)=>a.title.localeCompare(b.title,"ar")||a.num.localeCompare(b.num));
+  const cats=S.settings.categories;
+  return `<div class="search"><input id="q" type="search" placeholder="ابحث بالعنوان أو رقم الكتاب أو المؤلف" value="${esc(S.q)}" autocomplete="off">
+    <button class="btn brass" data-v="scan" aria-label="مسح الكود">مسح</button></div>
+  <div class="chips">${["","متوفر","معار","تالف","مفقود"].map(s=>`<button class="chip" data-status="${s}" aria-pressed="${S.status===s}">${s||"الكل"}</button>`).join("")}</div>
+  <div class="chips" style="padding-top:0">${["",...cats].map(c=>`<button class="chip" data-cat="${esc(c)}" aria-pressed="${S.cat===c}">${esc(c)||"كل التصنيفات"}</button>`).join("")}</div>
+  ${!S.books.length?`<div class="empty"><b>الفهرس فارغ</b>${staff()?"أضف أول كتاب من زر «إضافة» في الأسفل.":"لم تُسجَّل كتب بعد."}</div>`
+   :list.length?`<div class="list">${list.map(bookRow).join("")}</div>`:`<div class="empty"><b>لا نتائج</b>جرّب كلمة أخرى أو رقماً آخر.</div>`}`;
+}
+function scanView(){
+  return `<div class="notice" style="margin-bottom:10px">وجّه الكاميرا نحو كود الكتاب. يمكنك أيضاً كتابة الرقم يدوياً.</div>
+  <div id="reader"></div>
+  <form class="search" id="manual" style="margin-top:10px"><input id="mnum" placeholder="رقم الكتاب، مثل B-0001" dir="ltr"><button class="btn">فتح</button></form>`;
+}
+function outView(){
+  if(!S.loans) return `<div class="empty"><b>جارٍ التحميل…</b></div>`;
+  const t=today(), open=S.loans.filter(l=>!l.ret).sort((a,b)=>(a.due||"9").localeCompare(b.due||"9"));
+  if(!open.length) return `<div class="empty"><b>كل الكتب في المكتبة</b>لا توجد إعارات مفتوحة.</div>`;
+  return `<div class="list">${open.map(l=>{const late=l.due&&l.due<t;return `<div class="loan ${late?"is-late":""}">
+    <div><div><span class="num">${esc(l.num)}</span> <b>${esc(l.title)}</b></div>
+    <div class="m">عند <b>${esc(l.borrower)}</b>${l.role?" ("+esc(l.role)+")":""}${l.phone?" · <span dir=ltr>"+esc(l.phone)+"</span>":""}</div>
+    <div class="m">خرج ${fmt(l.out)} على يد ${esc(l.by)} · ${late?`<span class="pill late">متأخر ${days(l.due,t)} يوم</span>`:"يعود "+fmt(l.due)}</div></div>
+    <button class="btn sm ok" data-return="${esc(l.num)}">إرجاع</button></div>`}).join("")}</div>`;
+}
+function opts(arr,sel){return arr.map(x=>`<option ${x===sel?"selected":""}>${esc(x)}</option>`).join("")}
+function dl(id,vals){return `<datalist id="${id}">${[...new Set(vals.filter(Boolean))].map(v=>`<option value="${esc(v)}">`).join("")}</datalist>`}
+function addView(){
+  const s=S.settings;
+  return `<h2 style="font-family:var(--display);margin:0">كتاب جديد</h2>
+  <form class="form" id="addForm">
+    <label>العنوان *<input id="a_title" required list="dlT"></label>${dl("dlT",S.books.map(b=>b.title))}
+    <div class="row2"><label>المؤلف<input id="a_author" list="dlA"></label><label>دار النشر<input id="a_pub" list="dlP"></label></div>
+    ${dl("dlA",S.books.map(b=>b.author))}${dl("dlP",S.books.map(b=>b.publisher))}
+    <div class="row2"><label>المترجم<input id="a_tr"></label><label>التصنيف<select id="a_cat"><option></option>${opts(s.categories)}</select></label></div>
+    <div class="row2"><label>المالك<select id="a_owner"><option></option>${opts(s.owners,s.owners[0])}</select></label>
+    <label>المكتبة<select id="a_lib">${opts(s.libraries,s.libraries[0])}</select></label></div>
+    <div class="row2"><label>عدد النسخ<input id="a_copies" type="number" min="1" max="50" value="1"></label>
+    <label>رقم الكتاب (اتركه فارغاً للترقيم التلقائي)<input id="a_num" dir="ltr" placeholder="${esc(s.prefix)}0001"></label></div>
+    <label>ملاحظات<input id="a_note"></label>
+    <div class="actions"><button class="btn brass" type="submit">حفظ وتوليد الكود</button></div>
+  </form><div id="addResult"></div>`;
+}
+function labelsView(){
+  const nums=S.books.map(b=>b.num);
+  return `<div class="notice">اختر النطاق ثم اضغط «طباعة». تُطبع 3 ملصقات في كل سطر على ورقة A4، قصّها والصقها داخل غلاف الكتاب.</div>
+  <div class="form"><div class="row2">
+    <label>من رقم<select id="l_from">${opts(nums,nums[0])}</select></label>
+    <label>إلى رقم<select id="l_to">${opts(nums,nums[nums.length-1])}</select></label></div>
+    <div class="actions"><button class="btn ghost sm" id="l_today">المضافة اليوم فقط</button><button class="btn brass" id="l_print">طباعة</button></div></div>
+  <div id="preview"></div>`;
+}
+function labelBooks(){
+  const f=$("#l_from")?.value,t=$("#l_to")?.value;
+  if(S._labelsToday) return S.books.filter(b=>b.added===today());
+  const i1=S.books.findIndex(b=>b.num===f), i2=S.books.findIndex(b=>b.num===t);
+  if(i1<0||i2<0) return [];
+  return S.books.slice(Math.min(i1,i2),Math.max(i1,i2)+1);
+}
+function labelHtml(b){return `<div class="label"><div class="q" data-qr="${esc(b.num)}"></div><div class="tx"><div class="lt">${esc(b.title)}</div><div class="ln">${esc(b.num)}</div><div class="ll">${esc(S.settings.name)}</div></div></div>`}
+function fillQR(root,size){root.querySelectorAll("[data-qr]").forEach(el=>{el.innerHTML="";new QRCode(el,{text:bookUrl(el.dataset.qr),width:size,height:size,correctLevel:QRCode.CorrectLevel.M})})}
+function drawLabelPreview(){const p=$("#preview");if(!p)return;const bs=labelBooks();p.innerHTML=bs.length?bs.map(labelHtml).join(""):`<div class="empty">لا كتب في هذا النطاق.</div>`;fillQR(p,96)}
+function reportsView(){
+  if(!S.loans) return `<div class="empty"><b>جارٍ التحميل…</b></div>`;
+  const t=today(), by={};
+  S.loans.forEach(l=>{const p=by[l.borrower]??={n:0,open:0,late:0,dur:[]};p.n++;
+    if(l.ret)p.dur.push(days(l.out,l.ret));else{p.open++;if(l.due&&l.due<t)p.late++}});
+  const rows=Object.entries(by).map(([name,p])=>({name,...p,avg:p.dur.length?p.dur.reduce((a,b)=>a+b,0)/p.dur.length:null})).sort((a,b)=>b.n-a.n);
+  const ranked=rows.filter(r=>r.avg!==null).sort((a,b)=>a.avg-b.avg), fast=ranked[0]?.name, slow=ranked.length>1?ranked.at(-1).name:null;
+  const cnt={};S.loans.forEach(l=>cnt[l.title]=(cnt[l.title]||0)+1);
+  const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const staffCnt={};S.loans.forEach(l=>{staffCnt[l.by]=(staffCnt[l.by]||0)+1;if(l.recvBy)staffCnt[l.recvBy]=(staffCnt[l.recvBy]||0)+1});
+  const dmg=S.books.filter(b=>b.status==="تالف"||b.status==="مفقود");
+  if(!S.loans.length) return `<div class="empty"><b>لا إعارات بعد</b>تظهر التقارير بعد أول إعارة.</div>`;
+  return `<h3>المستعيرون</h3><div class="card tw"><table><tr><th>الاسم</th><th>مرات</th><th>عنده الآن</th><th>متوسط الأيام</th></tr>
+  ${rows.map(r=>`<tr><td><b>${esc(r.name)}</b> ${r.name===fast?'<span class="badge fast">الأسرع</span>':""}${r.name===slow?'<span class="badge slow">الأبطأ</span>':""}</td><td class="n">${r.n}</td><td class="n">${r.open}${r.late?` <span class="badge slow">${r.late} متأخر</span>`:""}</td><td class="n">${r.avg===null?"—":r.avg.toFixed(1)}</td></tr>`).join("")}</table></div>
+  <h3>الأكثر إعارة</h3><div class="card tw"><table>${top.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="n">${v}</td></tr>`).join("")}</table></div>
+  <h3>العمليات حسب الأمين</h3><div class="card tw"><table>${Object.entries(staffCnt).map(([k,v])=>`<tr><td>${esc(k)}</td><td class="n">${v}</td></tr>`).join("")}</table></div>
+  ${dmg.length?`<h3>نسخ تالفة أو مفقودة</h3><div class="list">${dmg.map(bookRow).join("")}</div>`:""}`;
+}
+
+/* ================= بطاقة الكتاب ================= */
+function sheet(html){$("#sheetRoot").innerHTML=`<div class="scrim" data-close></div><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${html}</div>`}
+function closeSheet(){$("#sheetRoot").innerHTML=""}
+async function openBook(num){
+  num=String(num).trim(); if(!num) return;
+  const local=S.books.find(b=>b.num.toUpperCase()===num.toUpperCase());
+  if(!local){toast("لا يوجد كتاب بالرقم "+num,true);return}
+  sheet(bookCard(local,null,null,true));
+  if(staff()){ try{const j=await api("bookStaff",{num:local.num},true);upsert(j.book);sheet(bookCard(j.book,j.open,j.history))}catch(e){toast(e.message,true)} }
+  else { try{const j=await api("book",{num:local.num});upsert(j.book);sheet(bookCard(j.book))}catch{} }
+}
+function upsert(b){const i=S.books.findIndex(x=>x.num===b.num);if(i>=0)S.books[i]=b;else S.books.push(b)}
+function bookCard(b,open,hist,loading){
+  const t=today();
+  let actions="";
+  if(staff()&&!loading){
+    if(b.status==="متوفر") actions=`<button class="btn brass" data-lend="${esc(b.num)}">إعارة</button>`;
+    else if(open) actions=`<button class="btn ok" data-return="${esc(b.num)}">تسجيل الإرجاع</button>`;
+  }
+  return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span class="num">${esc(b.num)}</span>${pill(b.status)}</div>
+  <h2>${esc(b.title)}</h2>
+  <dl class="kv">${b.author?`<dt>المؤلف</dt><dd>${esc(b.author)}</dd>`:""}${b.publisher?`<dt>دار النشر</dt><dd>${esc(b.publisher)}</dd>`:""}
+  ${b.translator?`<dt>المترجم</dt><dd>${esc(b.translator)}</dd>`:""}${b.category?`<dt>التصنيف</dt><dd>${esc(b.category)}</dd>`:""}
+  ${b.owner?`<dt>المالك</dt><dd>${esc(b.owner)}</dd>`:""}${b.library?`<dt>المكتبة</dt><dd>${esc(b.library)}</dd>`:""}</dl>
+  ${open?`<div class="notice">عند <b>${esc(open.borrower)}</b>${open.role?" ("+esc(open.role)+")":""} منذ ${fmt(open.out)}، على يد ${esc(open.by)} · ${open.due&&open.due<t?`<b style="color:var(--bad)">متأخر ${days(open.due,t)} يوم</b>`:"يعود "+fmt(open.due)}${open.phone?` · <span dir="ltr">${esc(open.phone)}</span>`:""}</div>`:""}
+  ${!staff()?`<div class="notice">${b.status==="متوفر"?"الكتاب متوفر في الفهرس.":"الكتاب غير متاح حالياً."} للاستعارة تواصل مع أمين المكتبة. <b>توفّر الكتاب لا يعني الموافقة على الإعارة</b>، فالقرار يبقى لأمين المكتبة بعد التحقق من حالة الكتاب.</div>`:""}
+  ${loading&&staff()?`<p class="by">جارٍ جلب السجل…</p>`:""}
+  <div class="actions">${actions}${staff()?`<button class="btn ghost" data-qrshow="${esc(b.num)}">الكود</button>`:""}<button class="btn ghost" data-close>إغلاق</button></div>
+  <div id="qrSlot"></div>
+  ${hist&&hist.length?`<h3>سجل الإعارة</h3><div class="hist">${hist.map(h=>`<div><span><b>${esc(h.borrower)}</b> <span class="by">أعاره ${esc(h.by)}${h.recvBy?" · استلمه "+esc(h.recvBy):""}</span></span><span>${fmt(h.out)} ← ${h.ret?fmt(h.ret)+" ("+days(h.out,h.ret)+" يوم)"+(h.cond&&h.cond!=="سليم"?" · "+esc(h.cond):""):"لم يعد"}</span></div>`).join("")}</div>`:""}`;
+}
+function lendSheet(num){
+  const b=S.books.find(x=>x.num===num), s=S.settings, names=(S.loans||[]).map(l=>l.borrower);
+  sheet(`<span class="num">${esc(num)}</span><h2>إعارة «${esc(b.title)}»</h2><p class="by">على يد: <b>${esc(S.user)}</b></p>
+  <form class="form" id="lendForm">
+    <label>اسم المستعير *<input id="l_who" required list="dlB" autocomplete="off"></label>${dl("dlB",names)}
+    <div class="row2"><label>الهاتف<input id="l_phone" type="tel" dir="ltr"></label><label>القسم / الصفة<input id="l_role" placeholder="مثلاً: 4 ابتدائي، ولي، معلم"></label></div>
+    <div class="row2"><label>تاريخ الإعارة<input id="l_out" type="date" value="${today()}"></label><label>يعود قبل<input id="l_due" type="date" value="${addDays(today(),s.loanDays)}"></label></div>
+    <label>ملاحظة (حالة الكتاب عند الخروج…)<input id="l_note"></label>
+    <div class="actions"><button class="btn brass" type="submit">تأكيد الإعارة</button><button class="btn ghost" type="button" data-close>إلغاء</button></div>
+  </form>`);
+  setTimeout(()=>$("#l_who")?.focus(),60);
+}
+function returnSheet(num){
+  const b=S.books.find(x=>x.num===num);
+  sheet(`<span class="num">${esc(num)}</span><h2>إرجاع «${esc(b?.title||"")}»</h2><p class="by">يستلمه: <b>${esc(S.user)}</b></p>
+  <form class="form" id="retForm">
+    <div class="row2"><label>تاريخ الإرجاع<input id="r_date" type="date" value="${today()}"></label>
+    <label>حالة الكتاب<select id="r_cond">${opts(["سليم","صفحات ناقصة","تالف","مفقود"],"سليم")}</select></label></div>
+    <label>ملاحظة<input id="r_note"></label>
+    <div class="actions"><button class="btn ok" type="submit">تأكيد الإرجاع</button><button class="btn ghost" type="button" data-close>إلغاء</button></div>
+  </form>`);
+}
+function loginSheet(){
+  sheet(`<h2>دخول الأمين</h2><p class="by">الأسماء والرموز تُضبط في ورقة «الإعدادات».</p>
+  <form class="form" id="loginForm">
+    <label>الاسم<select id="g_user">${opts(S.settings?.staff||[])}</select></label>
+    <label>الرمز السري<input id="g_pin" type="password" inputmode="numeric" required></label>
+    <div class="actions"><button class="btn brass" type="submit">دخول</button><button class="btn ghost" type="button" data-close>إلغاء</button></div></form>`);
+}
+function logout(){S.user=S.pin=null;S.loans=null;try{localStorage.removeItem("lib_auth")}catch{};S.view="catalog";render()}
+
+/* ================= المسح ================= */
+function parseCode(text){try{const u=new URL(text);return u.searchParams.get("b")||text}catch{return text}}
+async function startScan(){
+  if(typeof Html5Qrcode==="undefined"){toast("تعذّر تحميل قارئ الكود",true);return}
+  try{
+    S.scanner=new Html5Qrcode("reader");
+    await S.scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:230,height:230}},txt=>{
+      const n=parseCode(txt); stopScan().then(()=>{S.view="catalog";render();openBook(n)});
+    });
+  }catch(e){toast("لم يُسمح بالكاميرا. اكتب الرقم يدوياً أو امسح بكاميرا الهاتف العادية.",true)}
+}
+async function stopScan(){const s=S.scanner;S.scanner=null;if(s){try{await s.stop();s.clear()}catch{}}}
+
+/* ================= الأحداث ================= */
+function toast(m,err){const t=document.createElement("div");t.className="toast"+(err?" err":"");t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),err?4200:2400)}
+async function busy(form,fn){form.classList.add("loading");try{await fn()}catch(e){toast(e.message,true)}finally{form.classList.remove("loading")}}
+
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("[data-v],[data-open],[data-status],[data-cat],[data-close],[data-lend],[data-return],[data-qrshow],#whoBtn,#l_print,#l_today");
+  if(!t) return; const d=t.dataset;
+  if(t.id==="whoBtn"){ if(staff()) sheet(`<h2>${esc(S.user)}</h2><div class="actions"><button class="btn bad" id="doLogout">خروج</button><button class="btn ghost" data-close>إلغاء</button></div>`); else loginSheet(); return }
+  if(d.v){S.view=d.v;render();scrollTo(0,0)}
+  else if(d.open!==undefined) openBook(d.open);
+  else if(d.status!==undefined){S.status=d.status;render()}
+  else if(d.cat!==undefined){S.cat=d.cat;render()}
+  else if(d.close!==undefined) closeSheet();
+  else if(d.lend) lendSheet(d.lend);
+  else if(d.return) returnSheet(d.return);
+  else if(d.qrshow){const slot=$("#qrSlot");slot.innerHTML=`<div class="qrbox"><div class="q" data-qr="${esc(d.qrshow)}"></div><div><b class="num">${esc(d.qrshow)}</b><p class="by" style="overflow-wrap:anywhere;direction:ltr">${esc(bookUrl(d.qrshow))}</p></div></div>`;fillQR(slot,120)}
+  else if(t.id==="l_today"){S._labelsToday=!S._labelsToday;t.setAttribute("aria-pressed",S._labelsToday);t.textContent=S._labelsToday?"كل النطاق":"المضافة اليوم فقط";drawLabelPreview()}
+  else if(t.id==="l_print"){const bs=labelBooks();if(!bs.length)return toast("لا كتب للطباعة",true);const p=$("#print");p.innerHTML=bs.map(labelHtml).join("");fillQR(p,110);setTimeout(()=>window.print(),300)}
+});
+document.addEventListener("click",e=>{if(e.target.id==="doLogout"){closeSheet();logout()}});
+document.addEventListener("change",e=>{if(e.target.id==="l_from"||e.target.id==="l_to"){S._labelsToday=false;drawLabelPreview()}});
+document.addEventListener("input",e=>{if(e.target.id==="q"){S.q=e.target.value;const pos=e.target.selectionStart;render();const q=$("#q");q.focus();q.setSelectionRange(pos,pos)}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet();if(e.key==="Enter"&&e.target.id==="q"){const v=e.target.value.trim();const hit=S.books.find(b=>b.num.toUpperCase()===v.toUpperCase());if(hit)openBook(hit.num)}});
+document.addEventListener("submit",async e=>{
+  e.preventDefault(); const f=e.target;
+  if(f.id==="manual"){const n=$("#mnum").value;await stopScan();S.view="catalog";render();openBook(n)}
+  else if(f.id==="loginForm") busy(f,async()=>{
+    const user=$("#g_user").value,pin=$("#g_pin").value;
+    await api("login",{user,pin}); S.user=user;S.pin=pin; try{localStorage.setItem("lib_auth",JSON.stringify({user,pin}))}catch{}
+    closeSheet(); await loadLoans(); render(); toast("مرحباً "+user);
+  });
+  else if(f.id==="lendForm") busy(f,async()=>{
+    const num=f.closest(".sheet").querySelector(".num").textContent;
+    await api("lend",{num,borrower:$("#l_who").value,phone:$("#l_phone").value,role:$("#l_role").value,out:$("#l_out").value,due:$("#l_due").value,note:$("#l_note").value},true);
+    closeSheet(); toast("سُجّلت الإعارة"); await refresh(); openBook(num);
+  });
+  else if(f.id==="retForm") busy(f,async()=>{
+    const num=f.closest(".sheet").querySelector(".num").textContent;
+    const j=await api("returnBook",{num,ret:$("#r_date").value,cond:$("#r_cond").value,note:$("#r_note").value},true);
+    closeSheet(); toast("عاد الكتاب · الحالة: "+j.status); await refresh();
+  });
+  else if(f.id==="addForm") busy(f,async()=>{
+    const book={title:$("#a_title").value,author:$("#a_author").value,publisher:$("#a_pub").value,translator:$("#a_tr").value,
+      category:$("#a_cat").value,owner:$("#a_owner").value,library:$("#a_lib").value,copies:$("#a_copies").value,num:$("#a_num").value,note:$("#a_note").value};
+    const j=await api("addBook",{book},true); await refresh();
+    S.view="add"; render();
+    const r=$("#addResult"); r.innerHTML=`<div class="notice" style="margin-top:12px">أُضيف: <b>${esc(book.title)}</b> بالأرقام ${j.added.map(n=>`<span class="num">${esc(n)}</span>`).join(" ")}</div><div id="preview">${j.added.map(n=>labelHtml({num:n,title:book.title})).join("")}</div>
+    <div class="actions"><button class="btn ghost" data-v="labels">طباعة الملصقات</button></div>`; fillQR(r,96); toast("أُضيف الكتاب");
+  });
+});
+async function refresh(){const j=await api("init");S.settings=j.settings;S.books=j.books;if(staff())await loadLoans();render()}
+
+load();
+</script>
+</body>
+</html>
