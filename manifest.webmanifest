@@ -1,0 +1,22 @@
+{
+  "name": "المكتبة · فهرس وإعارة",
+  "short_name": "المكتبة",
+  "description": "فهرس الكتب وإعارتها بالمسح عبر رمز QR",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#e7ecf3",
+  "theme_color": "#e7ecf3",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "امسح كود كتاب", "short_name": "مسح", "url": "./?v=scan", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "الكتب في الخارج", "short_name": "في الخارج", "url": "./?v=out", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
