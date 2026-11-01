@@ -975,7 +975,8 @@ function lendSheet(num,pre){
   sheet(`<div class="hero c-blue"><span class="ic">${icon("out")}</span><div class="tx"><h2>إعارة «${esc(b.title)}»</h2><span class="code" data-num>${esc(num)}</span><p class="by">على يد: <b>${esc(S.user)}</b></p></div></div>
   <form class="form" id="lendForm">
     <label>اسم المستعير<input id="l_who" required list="dlB" autocomplete="off" value="${esc(pre.who)}"></label>${dl("dlB",names)}
-    <div class="row2"><label>الهاتف<input id="l_phone" type="tel" inputmode="numeric" dir="ltr" maxlength="14" value="${esc(pre.phone)}" data-phone placeholder="اختياري"><span class="fieldnote"></span></label><label>القسم / الصفة<input id="l_role" placeholder="4 ابتدائي، ولي، معلم…" value="${esc(pre.role)}"></label></div>
+    <label>الهاتف<input id="l_phone" type="tel" inputmode="numeric" dir="ltr" maxlength="14" value="${esc(pre.phone)}" data-phone placeholder="اختياري"><span class="fieldnote"></span></label>
+    <input type="hidden" id="l_role" value="${esc(pre.role)}">${pre.role?`<p class="by" style="margin:-4px 0 0">${esc(pre.role)} (من الطلب)</p>`:""}
     <label>مدة الإعارة</label>
     <div class="durs">${[[1,"شهر"],[2,"شهران"],[3,"3 أشهر"]].map(([n,l])=>`<button type="button" data-months="${n}" aria-pressed="${n===1}">${l}<small>${addMonths(today(),n).slice(5).split("-").reverse().join("/")}</small></button>`).join("")}<button type="button" data-months="0" aria-pressed="false">تاريخ آخر<small>اختر</small></button></div>
     <div id="dueBox">${dueCard(today(),addMonths(today(),1))}</div>
