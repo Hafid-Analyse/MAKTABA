@@ -19,7 +19,7 @@
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 /* ===== الإعداد الوحيد المطلوب: رابط تطبيق الويب من Apps Script ===== */
-const API_URL = "https://script.google.com/macros/s/AKfycbwN3s3zHe_t3LWkjXSQClzQleeQ4IaWHu_Syhr7qJXBafGjqWX0DsfwMY-hNbe78irr/exec";
+const API_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
 /* تطبيق الوضع المحفوظ قبل الرسم لتفادي الوميض */
 (function(){let t=null;try{t=localStorage.getItem("lib_theme")}catch{}
 document.documentElement.dataset.theme=t||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")})();
@@ -178,6 +178,7 @@ button{cursor:pointer}
 .dk[aria-current="true"]{color:var(--ink)}
 .dk[aria-current="true"] .bub{background:var(--card);box-shadow:var(--sh-md),var(--hi);color:var(--blue-2)}
 .dk[hidden]{visibility:hidden;display:flex}
+.dock[hidden]{display:none}
 .scanfab{position:relative;grid-column:3;grid-row:1;margin-top:-34px;width:84px;height:84px;border-radius:50%;border:0;background:var(--card);
   box-shadow:0 0 0 8px color-mix(in srgb,var(--bg) 85%,transparent),var(--sh-lg),var(--hi);display:grid;place-items:center}
 .scanfab .ico{width:34px;height:34px;stroke:url(#gSun);stroke-width:2}
@@ -244,6 +245,34 @@ td.n{font-variant-numeric:tabular-nums}
   background:color-mix(in srgb,var(--ink) 88%,transparent);color:var(--bg);backdrop-filter:blur(10px);padding:10px 20px;border-radius:999px;font-weight:500;font-size:14px;box-shadow:var(--sh-lg);animation:rise .25s}
 .toast.err{background:linear-gradient(135deg,var(--sun-1),var(--sun-2));color:#fff}
 .loading{opacity:.55;pointer-events:none}
+/* ===== واجهة الزائر ===== */
+body.guest .app{padding-bottom:40px}
+.ministats{display:flex;gap:8px;margin-bottom:14px}
+.ms{flex:1;display:flex;align-items:center;gap:8px;border:0;background:var(--card);border-radius:18px;box-shadow:var(--sh-md),var(--hi);padding:8px 10px;min-width:0;transition:all .2s}
+.ms i{width:30px;height:30px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:0 6px 12px -6px var(--c2)}
+.ms i .ico{width:16px;height:16px}
+.ms b{font-size:17px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.ms span{display:block;font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap}
+.ms[aria-pressed="true"]{background:linear-gradient(150deg,var(--c1),var(--c2));color:#fff;box-shadow:0 12px 22px -12px var(--c2)}
+.ms[aria-pressed="true"] span{color:rgba(255,255,255,.85)} .ms[aria-pressed="true"] i{background:rgba(255,255,255,.22);box-shadow:none}
+.fc{perspective:1100px;border:0;background:transparent;padding:0;height:212px;text-align:center;min-width:0}
+.fc-in{position:relative;width:100%;height:100%;transition:transform .6s cubic-bezier(.3,1.3,.5,1);transform-style:preserve-3d}
+.fc.flip .fc-in{transform:rotateY(180deg)}
+.fc .face2{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:var(--r-lg);overflow:hidden}
+.fc .front{height:100%;justify-content:center}
+.fc .back{transform:rotateY(180deg);background:var(--card);box-shadow:var(--sh-md),var(--hi);padding:12px 12px 10px;display:flex;flex-direction:column;gap:4px;text-align:start}
+.fc .back::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:linear-gradient(90deg,var(--c1),var(--c2))}
+.fc .back h4{margin:2px 0 4px;font-size:13.5px;font-weight:600;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.fc .back dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:2px 8px;font-size:11.5px;overflow:hidden}
+.fc .back dt{color:var(--muted)} .fc .back dd{margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fc .back .foot{margin-top:auto;font-size:10.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:5px;line-height:1.4}
+.fc .hint{position:absolute;bottom:8px;left:0;right:0;font-size:10px;color:var(--muted);opacity:.8}
+.fc .lent .hint{color:rgba(255,255,255,.75)}
+@media (prefers-reduced-motion:reduce){.fc-in{transition:none}}
+.mres{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.mr{display:flex;align-items:center;gap:12px;border:0;background:var(--card);border-radius:18px;box-shadow:var(--sh-md),var(--hi);padding:10px 12px;text-align:start;width:100%}
+.mr .ic{width:40px;height:40px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;font-weight:700;border:2px solid var(--c2);color:var(--c2);background:color-mix(in srgb,var(--c1) 12%,transparent)}
+.mr .tx{flex:1;min-width:0} .mr b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .mr small{color:var(--muted);font-size:12px}
 .install{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:var(--r-lg);box-shadow:var(--sh-md),var(--hi);padding:10px 12px;margin-bottom:16px}
 .install img{width:46px;height:46px;border-radius:13px;flex:0 0 auto}
 .install .tx{flex:1;min-width:0}
@@ -329,6 +358,13 @@ const bookUrl=n=>(S.settings?.appUrl||location.origin+location.pathname)+"?b="+e
 const icon=(id,cls="ico")=>`<svg class="${cls}"><use href="#i-${id}"/></svg>`;
 const PALS=["c-blue","c-violet","c-green","c-sun"];
 const catPal=c=>{const i=(S.settings?.categories||[]).indexOf(c);return i<0?"c-blue":PALS[i%PALS.length]};
+const norm=s=>String(s||"").toLowerCase().replace(/[\u064B-\u0652\u0640]/g,"").replace(/[أإآٱ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").trim();
+/* كتاب يطابق إن بدأ العنوان أو المؤلف (أو إحدى كلماتهما) بما كُتب؛ الأمين يبحث بالرقم أيضاً */
+function matches(b,q,withNum){
+  q=norm(q); if(!q) return true;
+  const fields=[b.title,b.author].concat(withNum?[b.num]:[]).map(norm);
+  return fields.some(f=>f.startsWith(q)||f.split(/\s+/).some(w=>w.startsWith(q)||(w.startsWith("ال")&&w.slice(2).startsWith(q))));
+}
 const initial=t=>(String(t||"؟").replace(/^(ال)/,"").trim()[0]||"؟");
 
 /* ================= الوضع الليلي والنهاري ================= */
@@ -375,9 +411,11 @@ function chrome(){
   $("#sub").textContent=staff()?`أدِر ${name}`:`فهرس ${name}`;
   const w=$("#whoBtn"); w.innerHTML=staff()?`${esc(initial(S.user))}<span class="plus">✓</span>`:icon("user");
   document.querySelectorAll("[data-staff]").forEach(b=>b.hidden=!staff());
+  $(".dock").hidden=!staff(); document.body.classList.toggle("guest",!staff());
   document.querySelectorAll(".dk").forEach(b=>b.setAttribute("aria-current",b.dataset.v===S.view||(S.view==="labels"||S.view==="reports")&&b.dataset.v==="more"));
 }
 function render(){
+  if(!staff()) S.view="catalog";
   if(S.view!=="scan") stopScan();
   const v={catalog,scan:scanView,out:outView,add:addView,labels:labelsView,reports:reportsView}[S.view]||catalog;
   $("#main").innerHTML=v(); chrome();
@@ -406,11 +444,40 @@ function dial(c){
    </svg>
    <div class="face"><b>${pct}<sup>%</sup></b><span>على الرفوف</span></div></div>`;
 }
+function filtered(){
+  return S.books.filter(b=>(!S.status||(S.status==="غير متاح"?(b.status==="تالف"||b.status==="مفقود"):b.status===S.status))&&(!S.cat||b.category===S.cat)&&matches(b,S.q,staff()))
+    .sort((a,b)=>a.title.localeCompare(b.title,"ar")||a.num.localeCompare(b.num));
+}
+/* واجهة الزائر: الكتب مباشرة */
+function guestCatalog(){
+  const c=counts(), list=filtered();
+  const ms=(st,cls,ic,label,n)=>`<button class="ms ${cls}" data-status="${st}" aria-pressed="${S.status===st}"><i>${icon(ic)}</i><div><b>${n}</b><span>${label}</span></div></button>`;
+  return `${S.offline?`<div class="offline">لا يوجد اتصال · تعرض آخر نسخة محفوظة من الفهرس</div>`:""}${installBanner()}
+  <div class="searchbar">${icon("search")}<input id="q" type="search" placeholder="ابحث بعنوان الكتاب أو اسم المؤلف" value="${esc(S.q)}" autocomplete="off"></div>
+  <div class="cats">${["",...S.settings.categories].map(x=>`<button class="cat" data-cat="${esc(x)}" aria-pressed="${S.cat===x}">${esc(x)||"الكل"}</button>`).join("")}</div>
+  <div class="ministats" style="margin-top:8px">${ms("متوفر","c-blue","shelf","متوفر",c.av)}${ms("معار","c-violet","out","معار",c.out)}${ms("غير متاح","c-sun","warn","غير متاح",c.bad)}</div>
+  <div class="sechead" style="margin-top:4px"><h2>${S.cat?esc(S.cat):`كل <em>الكتب</em>`}</h2><span>${list.length} كتاب</span></div>
+  ${!S.books.length?`<div class="empty"><b>الفهرس فارغ</b>لم تُسجَّل كتب بعد.</div>`
+   :list.length?`<div class="grid">${list.map(flipCard).join("")}</div>`:`<div class="empty"><b>لا نتائج</b>لا يوجد عنوان أو مؤلف يبدأ بـ «${esc(S.q)}».</div>`}`;
+}
+function flipCard(b){
+  const lent=b.status==="معار", warn=b.status==="تالف"||b.status==="مفقود";
+  const row=(k,v)=>v?`<dt>${k}</dt><dd>${esc(v)}</dd>`:"";
+  return `<div class="fc ${catPal(b.category)}" data-flip role="button" tabindex="0" aria-label="${esc(b.title)}، اضغط لعرض التفاصيل"><div class="fc-in">
+    <div class="face2 bk front ${lent?"lent":""} ${warn?"warn":""}">
+      <span class="st st-${esc(b.status)}" style="${lent?"background:rgba(255,255,255,.2);box-shadow:none;color:#fff":""}">${esc(b.status)}</span>
+      <span class="ic">${esc(initial(b.title))}</span>
+      <span class="t">${esc(b.title)}</span>
+      <span class="m">${esc(b.author)||"—"}</span>
+      <span class="hint">اضغط للتفاصيل ↻</span></div>
+    <div class="face2 back"><h4>${esc(b.title)}</h4>
+      <dl>${row("المؤلف",b.author)}${row("الدار",b.publisher)}${row("المترجم",b.translator)}${row("التصنيف",b.category)}<dt>الحالة</dt><dd>${esc(b.status)}</dd><dt>الرقم</dt><dd class="code">${esc(b.num)}</dd></dl>
+      <div class="foot">الإعارة بموافقة أمين المكتبة بعد التحقق من حالة الكتاب.</div></div>
+  </div></div>`;
+}
 function catalog(){
-  const c=counts(), q=S.q.trim().toLowerCase();
-  let list=S.books.filter(b=>(!S.status||(S.status==="غير متاح"?(b.status==="تالف"||b.status==="مفقود"):b.status===S.status))&&(!S.cat||b.category===S.cat)&&
-    (!q||[b.num,b.title,b.author,b.publisher,b.translator].join(" ").toLowerCase().includes(q)));
-  list.sort((a,b)=>a.title.localeCompare(b.title,"ar")||a.num.localeCompare(b.num));
+  if(!staff()) return guestCatalog();
+  const c=counts(), list=filtered();
   const tile=(st,cls,ic,label,n)=>`<button class="tile ${cls}" data-status="${st}" aria-pressed="${S.status===st}"><span class="ring">${icon(ic)}</span><b>${label}</b><small>${n} نسخة</small></button>`;
   return `${S.offline?`<div class="offline">لا يوجد اتصال · تعرض آخر نسخة محفوظة من الفهرس</div>`:""}${installBanner()}
   <div class="tiles">
@@ -446,7 +513,8 @@ function bookTile(b){
 function scanView(){
   return `<div class="panel"><h2>امسح كود الكتاب</h2><p class="by">وجّه الكاميرا نحو الملصق، أو اكتب الرقم يدوياً.</p>
   <div id="reader" style="margin-top:14px"></div>
-  <form class="searchbar" id="manual" style="margin-top:14px">${icon("search")}<input id="mnum" placeholder="رقم الكتاب، مثل B-0001" dir="ltr"><button class="roundbtn" aria-label="فتح">${icon("back")}</button></form></div>`;
+  <form class="searchbar" id="manual" style="margin-top:14px">${icon("search")}<input id="mnum" placeholder="أو ابحث بالعنوان أو المؤلف أو الرقم" autocomplete="off"><button class="roundbtn" aria-label="فتح">${icon("back")}</button></form>
+  <div class="mres" id="mres"></div></div>`;
 }
 function outView(){
   if(!S.loans) return `<div class="empty"><b>جارٍ التحميل…</b></div>`;
@@ -625,8 +693,10 @@ async function busy(form,fn){form.classList.add("loading");try{await fn()}catch(
 const sheetNum=f=>f.closest(".sheet").querySelector("[data-num]").textContent;
 
 document.addEventListener("click",async e=>{
-  const t=e.target.closest("[data-v],[data-open],[data-status],[data-cat],[data-close],[data-lend],[data-return],[data-qrshow],[data-due],#whoBtn,#themeBtn,#doLogout,#l_print,#l_today,#doInstall,#noInstall");
+  const t=e.target.closest("[data-v],[data-open],[data-status],[data-cat],[data-close],[data-lend],[data-return],[data-qrshow],[data-due],[data-flip],[data-pick],#whoBtn,#themeBtn,#doLogout,#l_print,#l_today,#doInstall,#noInstall");
   if(!t) return; const d=t.dataset;
+  if(d.flip!==undefined){t.classList.toggle("flip");return}
+  if(d.pick){await stopScan();S.view="catalog";render();openBook(d.pick);return}
   if(t.id==="doInstall"&&S.installEvt){S.installEvt.prompt();const r=await S.installEvt.userChoice;S.installEvt=null;if(r.outcome!=="accepted")render();return}
   if(t.id==="noInstall"){try{localStorage.setItem("lib_noinstall","1")}catch{};render();return}
   if(t.id==="themeBtn"){setTheme(document.documentElement.dataset.theme==="dark"?"light":"dark");return}
@@ -646,11 +716,18 @@ document.addEventListener("click",async e=>{
   else if(t.id==="l_print"){const bs=labelBooks();if(!bs.length)return toast("لا كتب للطباعة",true);const p=$("#print");p.innerHTML=bs.map(labelHtml).join("");fillQR(p,110);setTimeout(()=>window.print(),300)}
 });
 document.addEventListener("change",e=>{if(e.target.id==="l_from"||e.target.id==="l_to"){S._labelsToday=false;drawLabelPreview()}});
-document.addEventListener("input",e=>{if(e.target.id==="q"){S.q=e.target.value;const pos=e.target.selectionStart;render();const q=$("#q");q.focus();q.setSelectionRange(pos,pos)}});
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet();if(e.key==="Enter"&&e.target.id==="q"){const v=e.target.value.trim();const hit=S.books.find(b=>b.num.toUpperCase()===v.toUpperCase());if(hit)openBook(hit.num)}});
+function manualResults(){
+  const q=$("#mnum").value, box=$("#mres"); if(!box) return;
+  if(!norm(q)){box.innerHTML="";return}
+  const list=S.books.filter(b=>matches(b,q,true)).slice(0,8);
+  box.innerHTML=list.length?list.map(b=>`<button class="mr ${catPal(b.category)}" data-pick="${esc(b.num)}"><span class="ic">${esc(initial(b.title))}</span><span class="tx"><b>${esc(b.title)}</b><small>${esc(b.author)||"—"} · <span class="code">${esc(b.num)}</span></small></span><span class="st st-${esc(b.status)}">${esc(b.status)}</span></button>`).join("")
+    :`<div class="empty" style="padding:18px">لا يوجد كتاب يبدأ بـ «${esc(q)}»</div>`;
+}
+document.addEventListener("input",e=>{if(e.target.id==="mnum"){manualResults();return}if(e.target.id==="q"){S.q=e.target.value;const pos=e.target.selectionStart;render();const q=$("#q");q.focus();q.setSelectionRange(pos,pos)}});
+document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches?.("[data-flip]")){e.preventDefault();e.target.classList.toggle("flip");return}if(e.key==="Escape")closeSheet();if(e.key==="Enter"&&e.target.id==="q"){const v=e.target.value.trim();const hit=S.books.find(b=>b.num.toUpperCase()===v.toUpperCase());if(hit)openBook(hit.num)}});
 document.addEventListener("submit",async e=>{
   e.preventDefault(); const f=e.target;
-  if(f.id==="manual"){const n=$("#mnum").value;await stopScan();S.view="catalog";render();openBook(n)}
+  if(f.id==="manual"){const v=$("#mnum").value.trim();const hit=S.books.find(b=>b.num.toUpperCase()===v.toUpperCase())||S.books.find(b=>matches(b,v,true));if(!hit)return toast("لا يوجد كتاب مطابق",true);await stopScan();S.view="catalog";render();openBook(hit.num)}
   else if(f.id==="loginForm") busy(f,async()=>{
     const user=$("#g_user").value,pin=$("#g_pin").value;
     await api("login",{user,pin}); S.user=user;S.pin=pin; try{localStorage.setItem("lib_auth",JSON.stringify({user,pin}))}catch{}
