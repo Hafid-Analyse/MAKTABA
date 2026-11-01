@@ -20,8 +20,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== الإعداد الوحيد المطلوب: رابط تطبيق الويب من Apps Script ===== */
-const SB_URL = "PASTE_SUPABASE_URL";       /* رابط مشروع Supabase */
-const SB_KEY = "PASTE_SUPABASE_ANON_KEY";  /* المفتاح العام (anon) — آمن للنشر، الحماية داخل قاعدة البيانات */
+const SB_URL = "https://qlezqkfpuoanyqfyyiel.supabase.co";       /* رابط مشروع Supabase */
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFsZXpxa2ZwdW9hbnlxZnl5aWVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1MjMwNjgsImV4cCI6MjEwOTA5OTA2OH0.YaPD448BfFBlqr-U900wc-hJGdx-ZqLF9d9IiRMdnY0";  /* المفتاح العام (anon) — آمن للنشر، الحماية داخل قاعدة البيانات */
 /* تطبيق الوضع المحفوظ قبل الرسم لتفادي الوميض */
 (function(){let t=null;try{t=localStorage.getItem("lib_theme")}catch{}
 document.documentElement.dataset.theme=t||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")})();

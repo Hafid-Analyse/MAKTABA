@@ -114,22 +114,22 @@ begin
   return n;
 end $$;
 
-create or replace function _digits(v text) returns text language sql immutable as $$
+create or replace function _digits(v text) returns text language sql immutable set search_path = public as $$
   select regexp_replace(translate(coalesce(v,''), '٠١٢٣٤٥٦٧٨٩', '0123456789'), '\D', '', 'g');
 $$;
 
-create or replace function _book(b books) returns jsonb language sql stable as $$
+create or replace function _book(b books) returns jsonb language sql stable set search_path = public as $$
   select jsonb_build_object('num',b.num,'title',b.title,'author',b.author,'publisher',b.publisher,'translator',b.translator,
     'category',b.category,'owner',b.owner,'library',b.library,'status',b.status,'added',b.added,'note',b.note);
 $$;
 
-create or replace function _loan(l loans) returns jsonb language sql stable as $$
+create or replace function _loan(l loans) returns jsonb language sql stable set search_path = public as $$
   select jsonb_build_object('id',l.id,'num',l.num,'title',l.title,'borrower',l.borrower,'phone',l.phone,'role',l.role,
     'out',coalesce(to_char(l.out_date,'YYYY-MM-DD'),''),'due',coalesce(to_char(l.due_date,'YYYY-MM-DD'),''),
     'by',l.by_name,'ret',coalesce(to_char(l.ret_date,'YYYY-MM-DD'),''),'recvBy',l.recv_by,'cond',l.cond,'note',l.note);
 $$;
 
-create or replace function _req(r requests) returns jsonb language sql stable as $$
+create or replace function _req(r requests) returns jsonb language sql stable set search_path = public as $$
   select jsonb_build_object('id',r.id,'at',to_char(r.at at time zone 'Africa/Algiers','YYYY-MM-DD HH24:MI'),'num',r.num,'title',r.title,
     'name',r.name,'phone',r.phone,'forWho',r.for_who,'note',r.note,'status',r.status,'by',r.by_name,
     'doneAt',coalesce(to_char(r.done_at,'YYYY-MM-DD'),''));

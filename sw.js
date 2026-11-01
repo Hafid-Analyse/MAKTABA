@@ -21,7 +21,7 @@ self.addEventListener("activate", e => {
 
 self.addEventListener("fetch", e => {
   const req = e.request;
-  if (req.method !== "GET") return;               // طلبات Apps Script (POST) تمر مباشرة دون تخزين
+  if (req.method !== "GET") return;               // طلبات قاعدة البيانات (POST) تمر مباشرة دون تخزين
   const url = new URL(req.url);
 
   // صفحة التطبيق: الشبكة أولاً ثم النسخة المحفوظة
