@@ -1,0 +1,32 @@
+# يوقظ قاعدة بيانات المكتبة كل يومين حتى لا يوقفها Supabase (المشاريع المجانية تتوقف بعد 7 أيام بلا نشاط).
+# المفتاح هنا هو المفتاح العام نفسه الموجود في index.html، فلا سرّ فيه.
+name: Keep Supabase awake
+
+on:
+  schedule:
+    - cron: "23 5 */2 * *"   # كل يومين على الساعة 05:23 UTC
+  workflow_dispatch:          # تشغيل يدوي من تبويب Actions
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping library database
+        env:
+          SB_URL: https://qlezqkfpuoanyqfyyiel.supabase.co
+          SB_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFsZXpxa2ZwdW9hbnlxZnl5aWVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1MjMwNjgsImV4cCI6MjEwOTA5OTA2OH0.YaPD448BfFBlqr-U900wc-hJGdx-ZqLF9d9IiRMdnY0
+        run: |
+          for i in 1 2 3; do
+            code=$(curl -s -o out.json -w '%{http_code}' -X POST "$SB_URL/rest/v1/rpc/lib_api" \
+              -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" -H "Content-Type: application/json" \
+              -d '{"p_action":"init","p":{}}')
+            echo "Attempt $i: HTTP $code"
+            if [ "$code" = "200" ]; then
+              echo "Books in catalog: $(grep -o '"num"' out.json | wc -l)"
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "::error::Supabase did not answer. Open https://supabase.com/dashboard/project/qlezqkfpuoanyqfyyiel and press Restore if the project is paused."
+          exit 1
