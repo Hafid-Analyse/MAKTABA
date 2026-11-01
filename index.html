@@ -975,8 +975,7 @@ function lendSheet(num,pre){
   sheet(`<div class="hero c-blue"><span class="ic">${icon("out")}</span><div class="tx"><h2>إعارة «${esc(b.title)}»</h2><span class="code" data-num>${esc(num)}</span><p class="by">على يد: <b>${esc(S.user)}</b></p></div></div>
   <form class="form" id="lendForm">
     <label>اسم المستعير<input id="l_who" required list="dlB" autocomplete="off" value="${esc(pre.who)}"></label>${dl("dlB",names)}
-    <label>الهاتف<input id="l_phone" type="tel" inputmode="numeric" dir="ltr" maxlength="14" value="${esc(pre.phone)}" data-phone placeholder="اختياري"><span class="fieldnote"></span></label>
-    <input type="hidden" id="l_role" value="${esc(pre.role)}">${pre.role?`<p class="by" style="margin:-4px 0 0">${esc(pre.role)} (من الطلب)</p>`:""}
+    <label>رقم الهاتف<input id="l_phone" type="tel" inputmode="numeric" dir="ltr" maxlength="14" required value="${esc(pre.phone)}" data-phone placeholder="05 / 06 / 07 ثم 8 أرقام"><span class="fieldnote"></span></label>
     <label>مدة الإعارة</label>
     <div class="durs">${[[1,"شهر"],[2,"شهران"],[3,"3 أشهر"]].map(([n,l])=>`<button type="button" data-months="${n}" aria-pressed="${n===1}">${l}<small>${addMonths(today(),n).slice(5).split("-").reverse().join("/")}</small></button>`).join("")}<button type="button" data-months="0" aria-pressed="false">تاريخ آخر<small>اختر</small></button></div>
     <div id="dueBox">${dueCard(today(),addMonths(today(),1))}</div>
@@ -1180,9 +1179,9 @@ document.addEventListener("submit",async e=>{
   });
   else if(f.id==="lendForm") busy(f,async()=>{
     const num=sheetNum(f);
-    if($("#l_phone").value.trim()&&!phoneOk($("#l_phone").value)){phoneHint($("#l_phone"));$("#l_phone").focus();throw new Error("رقم الهاتف: 10 أرقام تبدأ بـ 05 أو 06 أو 07")}
+    if(!phoneOk($("#l_phone").value)){phoneHint($("#l_phone"));$("#l_phone").focus();throw new Error("رقم الهاتف إجباري: 10 أرقام تبدأ بـ 05 أو 06 أو 07")}
     if($("#l_due").value&&$("#l_due").value<($("#l_out").value||today())) throw new Error("تاريخ الإرجاع قبل تاريخ الإعارة");
-    await api("lend",{num,borrower:$("#l_who").value,phone:phoneDigits($("#l_phone").value),role:$("#l_role").value,out:$("#l_out").value,due:$("#l_due").value,note:$("#l_note").value},true);
+    await api("lend",{num,borrower:$("#l_who").value,phone:phoneDigits($("#l_phone").value),role:"",out:$("#l_out").value,due:$("#l_due").value,note:$("#l_note").value},true);
     if(S.fromReq){try{await api("setRequest",{id:S.fromReq,status:"سُلّم"},true)}catch{};S.fromReq=null}
     closeSheet(); toast("سُجّلت الإعارة"); await refresh(); openBook(num);
   });

@@ -238,7 +238,7 @@ begin
   elsif p_action = 'lend' then
     if length(trim(coalesce(p->>'borrower',''))) = 0 then raise exception 'اسم المستعير إلزامي'; end if;
     ph := _digits(p->>'phone');
-    if ph <> '' and ph !~ '^0[567][0-9]{8}$' then raise exception 'رقم الهاتف يجب أن يكون 10 أرقام ويبدأ بـ 05 أو 06 أو 07'; end if;
+    if ph !~ '^0[567][0-9]{8}$' then raise exception 'رقم الهاتف إجباري: 10 أرقام تبدأ بـ 05 أو 06 أو 07'; end if;
     select * into b from books where upper(num) = upper(p->>'num') for update;
     if not found then raise exception 'لا يوجد كتاب بهذا الرقم'; end if;
     if b.status <> 'متوفر' then raise exception 'الكتاب غير متاح للإعارة، حالته: %', b.status; end if;
@@ -360,3 +360,15 @@ do $$ begin
   begin alter publication supabase_realtime add table books;  exception when duplicate_object then null; end;
   begin alter publication supabase_realtime add table events; exception when duplicate_object then null; end;
 end $$;
+
+-- الهاتف إجباري في كل إعارة جديدة (حماية إضافية داخل الجدول نفسه)
+create or replace function _loan_phone_check() returns trigger language plpgsql set search_path = public as $$
+begin
+  if coalesce(new.phone,'') !~ '^0[567][0-9]{8}$' then
+    raise exception 'رقم الهاتف إجباري: 10 أرقام تبدأ بـ 05 أو 06 أو 07';
+  end if;
+  return new;
+end $$;
+drop trigger if exists loans_phone_required on loans;
+create trigger loans_phone_required before insert on loans for each row execute function _loan_phone_check();
+revoke execute on function _loan_phone_check() from public, anon, authenticated;
