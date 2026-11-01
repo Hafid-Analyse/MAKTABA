@@ -285,6 +285,30 @@ body.guest .app{padding-bottom:40px}
 .fc .lent .hint{color:rgba(255,255,255,.75)}
 @media (prefers-reduced-motion:reduce){.fc-in{transition:none}}
 .mres{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.seg{display:inline-flex;gap:4px;background:var(--soft);box-shadow:var(--sh-in);border-radius:999px;padding:4px}
+.seg button{border:0;background:transparent;color:var(--muted);width:36px;height:30px;border-radius:999px;display:grid;place-items:center}
+.seg button .ico{width:18px;height:18px}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--blue-2);box-shadow:var(--sh-md),var(--hi)}
+.sechead .rt{display:flex;align-items:center;gap:10px}
+.rows{display:flex;flex-direction:column;gap:10px}
+.rw{background:var(--card);border-radius:var(--r-md);box-shadow:var(--sh-md),var(--hi);overflow:hidden;transition:box-shadow .2s}
+.rw-h{display:flex;align-items:center;gap:12px;padding:10px 12px;width:100%;border:0;background:transparent;text-align:start;cursor:pointer}
+.rw .ic{width:44px;height:44px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;font-weight:700;font-size:17px;border:2px solid var(--c2);color:var(--c2);background:color-mix(in srgb,var(--c1) 12%,transparent)}
+.rw-h .tx{flex:1;min-width:0}
+.rw-h b{display:block;font-weight:600;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rw-h small{display:block;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rw-h .chev{color:var(--muted);width:18px;height:18px;transition:transform .3s}
+.rw.lent{box-shadow:inset -4px 0 0 var(--violet-2),var(--sh-md)}
+.rw.open .chev{transform:rotate(180deg)}
+.rw-b{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s ease}
+.rw.open .rw-b{grid-template-rows:1fr}
+.rw-b>div{overflow:hidden}
+.rw-b .in{padding:2px 14px 14px;border-top:1px dashed var(--line);margin:0 12px}
+.rw-b dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:10px 0;font-size:13px}
+.rw-b dt{color:var(--muted)} .rw-b dd{margin:0;overflow-wrap:anywhere}
+dd.code{text-align:right}
+.rw-b .note{font-size:12px;color:var(--muted);margin-top:8px}
+@media (prefers-reduced-motion:reduce){.rw-b,.rw-h .chev{transition:none}}
 .mr{display:flex;align-items:center;gap:12px;border:0;background:var(--card);border-radius:18px;box-shadow:var(--sh-md),var(--hi);padding:10px 12px;text-align:start;width:100%}
 .mr .ic{width:40px;height:40px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;font-weight:700;border:2px solid var(--c2);color:var(--c2);background:color-mix(in srgb,var(--c1) 12%,transparent)}
 .mr .tx{flex:1;min-width:0} .mr b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .mr small{color:var(--muted);font-size:12px}
@@ -333,6 +357,8 @@ body.guest .app{padding-bottom:40px}
     <symbol id="i-label" viewBox="0 0 24 24"><path d="M3 12V5a2 2 0 0 1 2-2h7l9 9-9 9-9-9z"/><circle cx="7.5" cy="7.5" r="1.5"/></symbol>
     <symbol id="i-exit" viewBox="0 0 24 24"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"/></symbol>
     <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+    <symbol id="i-rows" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4.5" rx="2"/><rect x="3" y="10" width="18" height="4.5" rx="2"/><rect x="3" y="16" width="18" height="4.5" rx="2"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
     <symbol id="i-back" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
   </defs>
 </svg>
@@ -359,7 +385,8 @@ body.guest .app{padding-bottom:40px}
 
 <script>
 /* ================= الحالة ================= */
-const S = { settings:null, books:[], loans:null, view:"catalog", q:"", status:"", cat:"", user:null, pin:null, scanner:null, installEvt:null, offline:false, reqs:null, fromReq:null };
+const S = { settings:null, books:[], loans:null, view:"catalog", q:"", status:"", cat:"", user:null, pin:null, scanner:null, installEvt:null, offline:false, reqs:null, fromReq:null, layout:"grid" };
+try{ if(localStorage.getItem("lib_layout")==="rows") S.layout="rows" }catch{}
 try{ const a=JSON.parse(localStorage.getItem("lib_auth")||"null"); if(a){S.user=a.user;S.pin=a.pin} }catch{}
 
 const $=s=>document.querySelector(s);
@@ -474,9 +501,12 @@ function guestCatalog(){
   <div class="searchbar">${icon("search")}<input id="q" type="search" placeholder="ابحث بعنوان الكتاب أو اسم المؤلف" value="${esc(S.q)}" autocomplete="off"></div>
   <div class="cats">${["",...S.settings.categories].map(x=>`<button class="cat" data-cat="${esc(x)}" aria-pressed="${S.cat===x}">${esc(x)||"الكل"}</button>`).join("")}</div>
   <div class="ministats" style="margin-top:8px">${ms("متوفر","c-blue","shelf","متوفر",c.av)}${ms("معار","c-violet","out","معار",c.out)}${ms("غير متاح","c-sun","warn","غير متاح",c.bad)}</div>
-  <div class="sechead" style="margin-top:4px"><h2>${S.cat?esc(S.cat):`كل <em>الكتب</em>`}</h2><span>${list.length} كتاب</span></div>
+  <div class="sechead" style="margin-top:4px"><h2>${S.cat?esc(S.cat):`كل <em>الكتب</em>`}</h2>
+    <div class="rt"><span>${list.length} كتاب</span><div class="seg" role="group" aria-label="طريقة العرض">
+      <button data-layout="grid" aria-pressed="${S.layout==="grid"}" aria-label="بطاقات">${icon("grid")}</button>
+      <button data-layout="rows" aria-pressed="${S.layout==="rows"}" aria-label="صفوف">${icon("rows")}</button></div></div></div>
   ${!S.books.length?`<div class="empty"><b>الفهرس فارغ</b>لم تُسجَّل كتب بعد.</div>`
-   :list.length?`<div class="grid">${list.map(flipCard).join("")}</div>`:`<div class="empty"><b>لا نتائج</b>لا يوجد عنوان أو مؤلف يبدأ بـ «${esc(S.q)}».</div>`}`;
+   :list.length?(S.layout==="rows"?`<div class="rows">${list.map(bookRow).join("")}</div>`:`<div class="grid">${list.map(flipCard).join("")}</div>`):`<div class="empty"><b>لا نتائج</b>لا يوجد عنوان أو مؤلف يبدأ بـ «${esc(S.q)}».</div>`}`;
 }
 function flipCard(b){
   const lent=b.status==="معار", warn=b.status==="تالف"||b.status==="مفقود";
@@ -493,6 +523,18 @@ function flipCard(b){
       ${b.status==="متوفر"||b.status==="معار"?`<button class="reqbtn" data-req="${esc(b.num)}">اطلب هذا الكتاب</button>`:""}
       <div class="foot">الإعارة بموافقة أمين المكتبة بعد التحقق من حالة الكتاب.</div></div>
   </div></div>`;
+}
+function bookRow(b){
+  const lent=b.status==="معار", row=(k,v)=>v?`<dt>${k}</dt><dd>${esc(v)}</dd>`:"";
+  return `<div class="rw ${catPal(b.category)} ${lent?"lent":""}">
+    <button class="rw-h" data-expand aria-expanded="false"><span class="ic">${esc(initial(b.title))}</span>
+      <span class="tx"><b>${esc(b.title)}</b><small>${esc(b.author)||"—"}</small></span>
+      <span class="st st-${esc(b.status)}">${esc(b.status)}</span><svg class="ico chev"><use href="#i-chev"/></svg></button>
+    <div class="rw-b"><div><div class="in">
+      <dl>${row("دار النشر",b.publisher)}${row("المترجم",b.translator)}${row("التصنيف",b.category)}<dt>الرقم</dt><dd class="code">${esc(b.num)}</dd></dl>
+      ${b.status==="متوفر"||b.status==="معار"?`<button class="btn sm ${catPal(b.category)}" data-req="${esc(b.num)}">اطلب هذا الكتاب</button>`:""}
+      <p class="note">الإعارة بموافقة أمين المكتبة بعد التحقق من حالة الكتاب.</p>
+    </div></div></div></div>`;
 }
 function catalog(){
   if(!staff()) return guestCatalog();
@@ -753,12 +795,14 @@ async function busy(form,fn){form.classList.add("loading");try{await fn()}catch(
 const sheetNum=f=>f.closest(".sheet").querySelector("[data-num]").textContent;
 
 document.addEventListener("click",async e=>{
-  const t=e.target.closest("[data-v],[data-open],[data-status],[data-cat],[data-close],[data-lend],[data-return],[data-qrshow],[data-due],[data-req],[data-rq],[data-rqlend],[data-flip],[data-pick],#whoBtn,#themeBtn,#doLogout,#l_print,#l_today,#doInstall,#noInstall");
+  const t=e.target.closest("[data-v],[data-open],[data-status],[data-cat],[data-close],[data-lend],[data-return],[data-qrshow],[data-due],[data-req],[data-rq],[data-rqlend],[data-flip],[data-expand],[data-layout],[data-pick],#whoBtn,#themeBtn,#doLogout,#l_print,#l_today,#doInstall,#noInstall");
   if(!t) return; const d=t.dataset;
   if(d.req){requestSheet(d.req);return}
   if(d.rq){try{await api("setRequest",{id:d.rq,status:d.st},true);toast("الطلب: "+d.st);await loadLoans();render()}catch(err){toast(err.message,true)}return}
   if(d.rqlend){const r=S.reqs.find(x=>x.id===d.rqlend);lendSheet(r.num,{who:r.name,phone:r.phone,role:r.forWho,reqId:r.id});return}
   if(d.flip!==undefined){t.classList.toggle("flip");return}
+  if(d.expand!==undefined){const r=t.closest(".rw"),o=r.classList.toggle("open");t.setAttribute("aria-expanded",o);return}
+  if(d.layout){S.layout=d.layout;try{localStorage.setItem("lib_layout",d.layout)}catch{};render();return}
   if(d.pick){await stopScan();S.view="catalog";render();openBook(d.pick);return}
   if(t.id==="doInstall"&&S.installEvt){S.installEvt.prompt();const r=await S.installEvt.userChoice;S.installEvt=null;if(r.outcome!=="accepted")render();return}
   if(t.id==="noInstall"){try{localStorage.setItem("lib_noinstall","1")}catch{};render();return}
