@@ -19,7 +19,7 @@
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 /* ===== الإعداد الوحيد المطلوب: رابط تطبيق الويب من Apps Script ===== */
-const API_URL = "https://script.google.com/macros/s/AKfycbwN3s3zHe_t3LWkjXSQClzQleeQ4IaWHu_Syhr7qJXBafGjqWX0DsfwMY-hNbe78irr/exec";
+const API_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
 /* تطبيق الوضع المحفوظ قبل الرسم لتفادي الوميض */
 (function(){let t=null;try{t=localStorage.getItem("lib_theme")}catch{}
 document.documentElement.dataset.theme=t||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")})();
@@ -179,6 +179,21 @@ button{cursor:pointer}
 .dk[aria-current="true"] .bub{background:var(--card);box-shadow:var(--sh-md),var(--hi);color:var(--blue-2)}
 .dk[hidden]{visibility:hidden;display:flex}
 .dock[hidden]{display:none}
+.avatar[hidden]{display:none}
+.fc .back .reqbtn{margin-top:auto;border:0;border-radius:999px;padding:8px 10px;font-size:12.5px;font-weight:600;color:#fff;background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:0 10px 18px -10px var(--c2)}
+.fc .back .foot{margin-top:6px}
+.done{text-align:center;padding:10px 4px 4px}
+.done .ok{width:84px;height:84px;margin:6px auto 14px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:40px;background:linear-gradient(135deg,var(--green-1),var(--green-2));box-shadow:0 18px 30px -14px var(--green-2),0 0 0 10px color-mix(in srgb,var(--green-1) 15%,transparent)}
+.done h2{margin:0 0 6px;font-size:22px;font-weight:600}
+.done p{margin:0 auto;max-width:34ch;color:var(--muted)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.req{background:var(--card);border-radius:var(--r-lg);box-shadow:var(--sh-md),var(--hi);padding:14px}
+.req .hd{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.req .hd b{font-weight:600}
+.req p{margin:4px 0 0;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.rs{font-size:11.5px;font-weight:600;border-radius:999px;padding:3px 10px;color:#fff;white-space:nowrap;background:linear-gradient(135deg,var(--c1),var(--c2))}
+.tile .cnt{position:absolute;top:8px;left:8px;min-width:22px;height:22px;border-radius:11px;padding:0 6px;display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--sun-1),var(--sun-2))}
+.tile{position:relative}
 .scanfab{position:relative;grid-column:3;grid-row:1;margin-top:-34px;width:84px;height:84px;border-radius:50%;border:0;background:var(--card);
   box-shadow:0 0 0 8px color-mix(in srgb,var(--bg) 85%,transparent),var(--sh-lg),var(--hi);display:grid;place-items:center}
 .scanfab .ico{width:34px;height:34px;stroke:url(#gSun);stroke-width:2}
@@ -235,7 +250,7 @@ th{font-size:11.5px;color:var(--muted);font-weight:500}
 td.n{font-variant-numeric:tabular-nums}
 .badge{font-size:10.5px;font-weight:600;border-radius:999px;padding:2px 8px;color:#fff;margin-inline-start:4px}
 .badge.fast{background:linear-gradient(135deg,var(--green-1),var(--green-2))} .badge.slow{background:linear-gradient(135deg,var(--sun-1),var(--sun-2))}
-.more{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px}
+.more{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:6px}
 
 /* ===== المسح ===== */
 #reader{width:100%;border-radius:var(--r-xl);overflow:hidden;background:#000;box-shadow:var(--sh-lg)}
@@ -255,7 +270,7 @@ body.guest .app{padding-bottom:40px}
 .ms span{display:block;font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap}
 .ms[aria-pressed="true"]{background:linear-gradient(150deg,var(--c1),var(--c2));color:#fff;box-shadow:0 12px 22px -12px var(--c2)}
 .ms[aria-pressed="true"] span{color:rgba(255,255,255,.85)} .ms[aria-pressed="true"] i{background:rgba(255,255,255,.22);box-shadow:none}
-.fc{perspective:1100px;border:0;background:transparent;padding:0;height:212px;text-align:center;min-width:0}
+.fc{perspective:1100px;border:0;background:transparent;padding:0;height:236px;text-align:center;min-width:0}
 .fc-in{position:relative;width:100%;height:100%;transition:transform .6s cubic-bezier(.3,1.3,.5,1);transform-style:preserve-3d}
 .fc.flip .fc-in{transform:rotateY(180deg)}
 .fc .face2{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:var(--r-lg);overflow:hidden}
@@ -344,7 +359,7 @@ body.guest .app{padding-bottom:40px}
 
 <script>
 /* ================= الحالة ================= */
-const S = { settings:null, books:[], loans:null, view:"catalog", q:"", status:"", cat:"", user:null, pin:null, scanner:null, installEvt:null, offline:false };
+const S = { settings:null, books:[], loans:null, view:"catalog", q:"", status:"", cat:"", user:null, pin:null, scanner:null, installEvt:null, offline:false, reqs:null, fromReq:null };
 try{ const a=JSON.parse(localStorage.getItem("lib_auth")||"null"); if(a){S.user=a.user;S.pin=a.pin} }catch{}
 
 const $=s=>document.querySelector(s);
@@ -392,10 +407,13 @@ async function load(){
     if(v&&["scan","out","add"].includes(v)&&(v==="scan"||staff())) S.view=v;
     render();
     if(b) openBook(b);
-    if(b||v) history.replaceState(null,"",location.pathname);
+    const amin=qs.has("amin");
+    if(amin&&!staff()) loginSheet();
+    if(b||v||amin) history.replaceState(null,"",location.pathname);
   }catch(e){ $("#main").innerHTML=`<div class="empty"><b>تعذّر تحميل الفهرس</b>${esc(e.message)}</div>` }
 }
-async function loadLoans(){ try{ S.loans=(await api("loans",{},true)).loans }catch(e){ if(/الرمز/.test(e.message)) logout(); } }
+async function loadLoans(){ try{ const [a,b]=await Promise.all([api("loans",{},true),api("requests",{},true)]); S.loans=a.loans; S.reqs=b.requests }catch(e){ if(/الرمز/.test(e.message)) logout(); } }
+const newReqs=()=>(S.reqs||[]).filter(r=>r.status==="جديد").length;
 async function refresh(){const j=await api("init");S.settings=j.settings;S.books=j.books;if(staff())await loadLoans();render()}
 
 /* ================= العرض ================= */
@@ -409,15 +427,15 @@ function chrome(){
   const name=S.settings?.name||"المكتبة";
   $("#hello").innerHTML=staff()?`أهلاً، <b>${esc(S.user)}</b>`:"أهلاً بك";
   $("#sub").textContent=staff()?`أدِر ${name}`:`فهرس ${name}`;
-  const w=$("#whoBtn"); w.innerHTML=staff()?`${esc(initial(S.user))}<span class="plus">✓</span>`:icon("user");
+  const w=$("#whoBtn"); w.hidden=!staff(); w.innerHTML=staff()?`${esc(initial(S.user))}<span class="plus">✓</span>`:"";
   document.querySelectorAll("[data-staff]").forEach(b=>b.hidden=!staff());
   $(".dock").hidden=!staff(); document.body.classList.toggle("guest",!staff());
-  document.querySelectorAll(".dk").forEach(b=>b.setAttribute("aria-current",b.dataset.v===S.view||(S.view==="labels"||S.view==="reports")&&b.dataset.v==="more"));
+  document.querySelectorAll(".dk").forEach(b=>b.setAttribute("aria-current",b.dataset.v===S.view||(S.view==="labels"||S.view==="reports"||S.view==="reqs")&&b.dataset.v==="more"));
 }
 function render(){
   if(!staff()) S.view="catalog";
   if(S.view!=="scan") stopScan();
-  const v={catalog,scan:scanView,out:outView,add:addView,labels:labelsView,reports:reportsView}[S.view]||catalog;
+  const v={catalog,scan:scanView,out:outView,add:addView,labels:labelsView,reports:reportsView,reqs:reqsView}[S.view]||catalog;
   $("#main").innerHTML=v(); chrome();
   if(S.view==="scan") startScan();
   if(S.view==="labels") drawLabelPreview();
@@ -472,6 +490,7 @@ function flipCard(b){
       <span class="hint">اضغط للتفاصيل ↻</span></div>
     <div class="face2 back"><h4>${esc(b.title)}</h4>
       <dl>${row("المؤلف",b.author)}${row("الدار",b.publisher)}${row("المترجم",b.translator)}${row("التصنيف",b.category)}<dt>الحالة</dt><dd>${esc(b.status)}</dd><dt>الرقم</dt><dd class="code">${esc(b.num)}</dd></dl>
+      ${b.status==="متوفر"||b.status==="معار"?`<button class="reqbtn" data-req="${esc(b.num)}">اطلب هذا الكتاب</button>`:""}
       <div class="foot">الإعارة بموافقة أمين المكتبة بعد التحقق من حالة الكتاب.</div></div>
   </div></div>`;
 }
@@ -492,7 +511,7 @@ function catalog(){
       <span class="pillsoft">${c.all?Math.round(c.out*100/c.all):0}% معار</span>
       <div class="end"><div class="big">${new Set(S.books.map(b=>b.title)).size}<small>عنوان</small></div><div class="lab">مختلف</div></div>
     </div>
-    ${staff()?`<div class="strip"><div><b>${c.late}</b><span>متأخر</span></div><div><b>${(S.loans||[]).filter(l=>!l.ret).length}</b><span>إعارة مفتوحة</span></div><div><b>${(S.loans||[]).filter(l=>l.out===today()||l.ret===today()).length}</b><span>حركة اليوم</span></div></div>`:""}
+    ${staff()?`<div class="strip"><div><b>${c.late}</b><span>متأخر</span></div><div><b>${(S.loans||[]).filter(l=>!l.ret).length}</b><span>إعارة مفتوحة</span></div><div data-v="reqs" style="cursor:pointer"><b style="${newReqs()?"color:var(--sun-2)":""}">${newReqs()}</b><span>طلب جديد</span></div></div>`:""}
   </section>
   <div class="searchbar">${icon("search")}<input id="q" type="search" placeholder="ابحث بالعنوان أو رقم الكتاب أو المؤلف" value="${esc(S.q)}" autocomplete="off">
     <button class="roundbtn" data-v="scan" aria-label="مسح الكود">${icon("scan")}</button></div>
@@ -619,16 +638,17 @@ function bookCard(b,open,hist,loading){
   ${open?`<div class="callout ${late?"sun":"violet"}">عند <b>${esc(open.borrower)}</b>${open.role?" ("+esc(open.role)+")":""} منذ ${fmt(open.out)}، على يد ${esc(open.by)}.<br>${late?`<b>متأخر ${days(open.due,t)} يوم</b> عن موعد ${fmt(open.due)}`:"يعود قبل "+fmt(open.due)}${open.phone?` · <span dir="ltr">${esc(open.phone)}</span>`:""}</div>`:""}
   ${!staff()?`<div class="callout">${b.status==="متوفر"?"الكتاب متوفر في الفهرس.":"الكتاب غير متاح حالياً."} للاستعارة تواصل مع أمين المكتبة.<br><b>توفّر الكتاب لا يعني الموافقة على الإعارة</b>، فالقرار يبقى لأمين المكتبة بعد التحقق من حالة الكتاب.</div>`:""}
   ${loading&&staff()?`<p class="by" style="margin-top:12px">جارٍ جلب السجل…</p>`:""}
-  <div class="actions">${act}${staff()?`<button class="btn soft" data-qrshow="${esc(b.num)}">${icon("scan")}الكود</button>`:""}<button class="btn flat" data-close>إغلاق</button></div>
+  <div class="actions">${act}${!staff()&&(b.status==="متوفر"||b.status==="معار")?`<button class="btn ${catPal(b.category)}" data-req="${esc(b.num)}">اطلب هذا الكتاب</button>`:""}${staff()?`<button class="btn soft" data-qrshow="${esc(b.num)}">${icon("scan")}الكود</button>`:""}<button class="btn flat" data-close>إغلاق</button></div>
   <div id="qrSlot"></div>
   ${hist&&hist.length?`<h3>سجل الإعارة</h3><div class="hist">${hist.map(h=>`<div class="h"><span><b>${esc(h.borrower)}</b><br><small>أعاره ${esc(h.by)}${h.recvBy?" · استلمه "+esc(h.recvBy):""}</small></span><span style="text-align:end">${fmt(h.out)} ← ${h.ret?fmt(h.ret):"لم يعد"}<br><small>${h.ret?days(h.out,h.ret)+" يوم"+(h.cond&&h.cond!=="سليم"?" · "+esc(h.cond):""):""}</small></span></div>`).join("")}</div>`:""}`;
 }
-function lendSheet(num){
+function lendSheet(num,pre){
+  pre=pre||{}; S.fromReq=pre.reqId||null;
   const b=S.books.find(x=>x.num===num), s=S.settings, names=(S.loans||[]).map(l=>l.borrower);
   sheet(`<div class="hero c-blue"><span class="ic">${icon("out")}</span><div class="tx"><h2>إعارة «${esc(b.title)}»</h2><span class="code" data-num>${esc(num)}</span><p class="by">على يد: <b>${esc(S.user)}</b></p></div></div>
   <form class="form" id="lendForm">
-    <label>اسم المستعير<input id="l_who" required list="dlB" autocomplete="off"></label>${dl("dlB",names)}
-    <div class="row2"><label>الهاتف<input id="l_phone" type="tel" dir="ltr"></label><label>القسم / الصفة<input id="l_role" placeholder="4 ابتدائي، ولي، معلم…"></label></div>
+    <label>اسم المستعير<input id="l_who" required list="dlB" autocomplete="off" value="${esc(pre.who)}"></label>${dl("dlB",names)}
+    <div class="row2"><label>الهاتف<input id="l_phone" type="tel" dir="ltr" value="${esc(pre.phone)}"></label><label>القسم / الصفة<input id="l_role" placeholder="4 ابتدائي، ولي، معلم…" value="${esc(pre.role)}"></label></div>
     <div class="row2"><label>تاريخ الإعارة<input id="l_out" type="date" value="${today()}"></label><label>يعود قبل<input id="l_due" type="date" value="${addDays(today(),s.loanDays)}"></label></div>
     <div class="chiprow">${[7,14,30].map(n=>`<button type="button" class="cat" data-due="${n}">${n===7?"أسبوع":n===14?"أسبوعان":"شهر"}</button>`).join("")}</div>
     <label>ملاحظة (حالة الكتاب عند الخروج…)<input id="l_note"></label>
@@ -646,6 +666,41 @@ function returnSheet(num){
     <div class="actions"><button class="btn c-green" type="submit">تأكيد الإرجاع</button><button class="btn flat" type="button" data-close>إلغاء</button></div>
   </form>`);
 }
+function requestSheet(num){
+  const b=S.books.find(x=>x.num===num); if(!b) return;
+  sheet(`<div class="hero ${catPal(b.category)}"><span class="ic">${esc(initial(b.title))}</span><div class="tx"><h2>طلب «${esc(b.title)}»</h2><span class="code" data-num>${esc(num)}</span>${b.author?`<p class="by">${esc(b.author)}</p>`:""}</div></div>
+  <form class="form" id="reqForm">
+    <label>الاسم الكامل<input id="q_name" required autocomplete="name"></label>
+    <label>رقم الهاتف<input id="q_phone" type="tel" dir="ltr" required autocomplete="tel" placeholder="05xx xx xx xx"></label>
+    <label>لمن الكتاب؟ (اسم التلميذ والقسم، اختياري)<input id="q_for"></label>
+    <label>ملاحظة (اختياري)<input id="q_note"></label>
+    <input class="hp" id="q_web" tabindex="-1" autocomplete="off" aria-hidden="true">
+    ${b.status==="معار"?`<div class="callout">الكتاب معار حالياً. يُسجَّل طلبك ويتواصل معك أمين المكتبة عند عودته.</div>`:""}
+    <div class="actions"><button class="btn ${catPal(b.category)}" type="submit">إرسال الطلب</button><button class="btn flat" type="button" data-close>إلغاء</button></div>
+  </form>`);
+  setTimeout(()=>$("#q_name")?.focus(),80);
+}
+function requestDone(){
+  sheet(`<div class="done"><div class="ok">✓</div><h2>وصل طلبك</h2>
+  <p>توفّر الكتاب في الفهرس لا يعني الموافقة على الإعارة. يبقى الطلب خاضعاً لموافقة أمين المكتبة بعد التحقق من حالة الكتاب، وسيُتواصل معكم.</p>
+  <div class="actions" style="justify-content:center"><button class="btn c-blue" data-close>حسناً</button></div></div>`);
+}
+const RS={"جديد":"c-sun","مقبول":"c-green","مرفوض":"c-violet","سُلّم":"c-blue"};
+function reqsView(){
+  if(!S.reqs) return `<div class="empty"><b>جارٍ التحميل…</b></div>`;
+  if(!S.reqs.length) return `<div class="empty"><b>لا طلبات بعد</b>تظهر هنا طلبات الزوار من بطاقات الكتب.</div>`;
+  const order={"جديد":0,"مقبول":1,"سُلّم":2,"مرفوض":3}, list=[...S.reqs].sort((a,b)=>order[a.status]-order[b.status]);
+  return `<div class="sechead" style="margin-top:0"><h2>طلبات <em>الاستعارة</em></h2><span>${newReqs()} جديد</span></div>
+  <div class="loans">${list.map(r=>{const bk=S.books.find(x=>x.num===r.num);return `<div class="req">
+    <div class="hd"><div><b>${esc(r.title)}</b> <span class="code" style="color:var(--muted)">${esc(r.num)}</span><p>${bk?`الكتاب الآن: ${esc(bk.status)}`:""}</p></div><span class="rs ${RS[r.status]||"c-blue"}">${esc(r.status)}</span></div>
+    <p><b style="color:var(--ink)">${esc(r.name)}</b> · <span dir="ltr">${esc(r.phone)}</span>${r.forWho?" · "+esc(r.forWho):""}</p>
+    ${r.note?`<p>${esc(r.note)}</p>`:""}<p>طُلب في ${esc(r.at)}${r.by?" · عالجه "+esc(r.by):""}</p>
+    <div class="actions" style="margin-top:10px">
+      ${r.status==="جديد"?`<button class="btn sm c-green" data-rq="${esc(r.id)}" data-st="مقبول">قبول</button><button class="btn sm flat" data-rq="${esc(r.id)}" data-st="مرفوض">رفض</button>`:""}
+      ${r.status==="مقبول"&&bk&&bk.status==="متوفر"?`<button class="btn sm c-blue" data-rqlend="${esc(r.id)}">إعارة الآن</button>`:""}
+      ${r.status==="مقبول"?`<button class="btn sm flat" data-rq="${esc(r.id)}" data-st="مرفوض">إلغاء</button>`:""}
+    </div></div>`}).join("")}</div>`;
+}
 function loginSheet(){
   sheet(`<div class="hero c-violet"><span class="ic">${icon("user")}</span><div class="tx"><h2>دخول الأمين</h2><p class="by">الأسماء والرموز تُضبط في ورقة «الإعدادات».</p></div></div>
   <form class="form" id="loginForm">
@@ -656,7 +711,7 @@ function loginSheet(){
 function moreSheet(){
   const t=(v,cls,ic,l)=>`<button class="tile ${cls}" ${v}><span class="ring">${icon(ic)}</span><b>${l}</b></button>`;
   sheet(`<div class="sechead" style="margin-top:0"><h2>المزيد</h2></div><div class="more">
-    ${t('data-v="labels"',"c-sun","label","الملصقات")}${t('data-v="reports"',"c-blue","chart","التقارير")}${t('id="doLogout"',"c-violet","exit","خروج")}</div>`);
+    ${t('data-v="reqs"',"c-green","user","الطلبات").replace("</button>",newReqs()?`<span class="cnt">${newReqs()}</span></button>`:"</button>")}${t('data-v="labels"',"c-sun","label","الملصقات")}${t('data-v="reports"',"c-blue","chart","التقارير")}${t('id="doLogout"',"c-violet","exit","خروج")}</div>`);
 }
 function logout(){S.user=S.pin=null;S.loans=null;try{localStorage.removeItem("lib_auth")}catch{};S.view="catalog";render()}
 
@@ -670,9 +725,14 @@ function installBanner(){
   if(isIOS()) return `<div class="install"><img src="icons/icon-192.png" alt=""><div class="tx"><b>ثبّت المكتبة على الآيفون</b><span>اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية»</span></div><button class="x" id="noInstall" aria-label="إخفاء">×</button></div>`;
   return "";
 }
+/* دخول الأمين المخفي: ?amin في الرابط، أو 5 لمسات سريعة على التحية */
+(()=>{let n=0,t=0;document.addEventListener("click",e=>{if(!e.target.closest("#hello")||staff())return;const now=Date.now();n=now-t<700?n+1:1;t=now;if(n>=5){n=0;loginSheet()}})})();
 addEventListener("beforeinstallprompt",e=>{e.preventDefault();S.installEvt=e;if(S.settings&&S.view==="catalog")render()});
 addEventListener("appinstalled",()=>{S.installEvt=null;toast("ثُبّت التطبيق");render()});
-if("serviceWorker" in navigator&&isSecureContext) addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+if("serviceWorker" in navigator&&isSecureContext){
+  addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{}));
+  let reloaded=false; navigator.serviceWorker.addEventListener("controllerchange",()=>{if(reloaded)return;reloaded=true;location.reload()});
+}
 
 /* ================= المسح ================= */
 function parseCode(text){try{const u=new URL(text);return u.searchParams.get("b")||text}catch{return text}}
@@ -693,8 +753,11 @@ async function busy(form,fn){form.classList.add("loading");try{await fn()}catch(
 const sheetNum=f=>f.closest(".sheet").querySelector("[data-num]").textContent;
 
 document.addEventListener("click",async e=>{
-  const t=e.target.closest("[data-v],[data-open],[data-status],[data-cat],[data-close],[data-lend],[data-return],[data-qrshow],[data-due],[data-flip],[data-pick],#whoBtn,#themeBtn,#doLogout,#l_print,#l_today,#doInstall,#noInstall");
+  const t=e.target.closest("[data-v],[data-open],[data-status],[data-cat],[data-close],[data-lend],[data-return],[data-qrshow],[data-due],[data-req],[data-rq],[data-rqlend],[data-flip],[data-pick],#whoBtn,#themeBtn,#doLogout,#l_print,#l_today,#doInstall,#noInstall");
   if(!t) return; const d=t.dataset;
+  if(d.req){requestSheet(d.req);return}
+  if(d.rq){try{await api("setRequest",{id:d.rq,status:d.st},true);toast("الطلب: "+d.st);await loadLoans();render()}catch(err){toast(err.message,true)}return}
+  if(d.rqlend){const r=S.reqs.find(x=>x.id===d.rqlend);lendSheet(r.num,{who:r.name,phone:r.phone,role:r.forWho,reqId:r.id});return}
   if(d.flip!==undefined){t.classList.toggle("flip");return}
   if(d.pick){await stopScan();S.view="catalog";render();openBook(d.pick);return}
   if(t.id==="doInstall"&&S.installEvt){S.installEvt.prompt();const r=await S.installEvt.userChoice;S.installEvt=null;if(r.outcome!=="accepted")render();return}
@@ -728,6 +791,10 @@ document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.tar
 document.addEventListener("submit",async e=>{
   e.preventDefault(); const f=e.target;
   if(f.id==="manual"){const v=$("#mnum").value.trim();const hit=S.books.find(b=>b.num.toUpperCase()===v.toUpperCase())||S.books.find(b=>matches(b,v,true));if(!hit)return toast("لا يوجد كتاب مطابق",true);await stopScan();S.view="catalog";render();openBook(hit.num)}
+  else if(f.id==="reqForm") busy(f,async()=>{
+    await api("request",{num:sheetNum(f),name:$("#q_name").value,phone:$("#q_phone").value,forWho:$("#q_for").value,note:$("#q_note").value,website:$("#q_web").value});
+    requestDone();
+  });
   else if(f.id==="loginForm") busy(f,async()=>{
     const user=$("#g_user").value,pin=$("#g_pin").value;
     await api("login",{user,pin}); S.user=user;S.pin=pin; try{localStorage.setItem("lib_auth",JSON.stringify({user,pin}))}catch{}
@@ -736,6 +803,7 @@ document.addEventListener("submit",async e=>{
   else if(f.id==="lendForm") busy(f,async()=>{
     const num=sheetNum(f);
     await api("lend",{num,borrower:$("#l_who").value,phone:$("#l_phone").value,role:$("#l_role").value,out:$("#l_out").value,due:$("#l_due").value,note:$("#l_note").value},true);
+    if(S.fromReq){try{await api("setRequest",{id:S.fromReq,status:"سُلّم"},true)}catch{};S.fromReq=null}
     closeSheet(); toast("سُجّلت الإعارة"); await refresh(); openBook(num);
   });
   else if(f.id==="retForm") busy(f,async()=>{

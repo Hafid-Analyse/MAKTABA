@@ -1,6 +1,6 @@
 /* عامل الخدمة: يجعل التطبيق يفتح بسرعة ويعمل دون اتصال.
    عند تعديل index.html غيّر رقم الإصدار هنا ليحصل الجميع على النسخة الجديدة. */
-const VERSION = "maktaba-v1";
+const VERSION = "maktaba-v2";
 const SHELL = [
   "./", "./index.html", "./manifest.webmanifest",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png",
@@ -27,7 +27,7 @@ self.addEventListener("fetch", e => {
   // صفحة التطبيق: الشبكة أولاً ثم النسخة المحفوظة
   if (req.mode === "navigate") {
     e.respondWith(
-      fetch(req).then(res => { const copy = res.clone(); caches.open(VERSION).then(c => c.put("./index.html", copy)); return res; })
+      fetch(req, { cache: "no-store" }).then(res => { const copy = res.clone(); caches.open(VERSION).then(c => c.put("./index.html", copy)); return res; })
         .catch(() => caches.match("./index.html"))
     );
     return;
