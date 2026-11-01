@@ -1,12 +1,12 @@
 /* عامل الخدمة: يجعل التطبيق يفتح بسرعة ويعمل دون اتصال.
    عند تعديل index.html غيّر رقم الإصدار هنا ليحصل الجميع على النسخة الجديدة. */
-const VERSION = "maktaba-v5";
+const VERSION = "maktaba-v6";
 const SHELL = [
   "./", "./index.html", "./manifest.webmanifest",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png",
   "./icons/apple-touch-icon.png", "./icons/favicon-32.png"
 ];
-const CDN = ["cdnjs.cloudflare.com", "unpkg.com", "fonts.googleapis.com", "fonts.gstatic.com"];
+const CDN = ["cdnjs.cloudflare.com", "unpkg.com", "cdn.jsdelivr.net", "fonts.googleapis.com", "fonts.gstatic.com"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

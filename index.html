@@ -17,9 +17,11 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== الإعداد الوحيد المطلوب: رابط تطبيق الويب من Apps Script ===== */
-const API_URL = "https://script.google.com/macros/s/AKfycbwN3s3zHe_t3LWkjXSQClzQleeQ4IaWHu_Syhr7qJXBafGjqWX0DsfwMY-hNbe78irr/exec";
+const SB_URL = "PASTE_SUPABASE_URL";       /* رابط مشروع Supabase */
+const SB_KEY = "PASTE_SUPABASE_ANON_KEY";  /* المفتاح العام (anon) — آمن للنشر، الحماية داخل قاعدة البيانات */
 /* تطبيق الوضع المحفوظ قبل الرسم لتفادي الوميض */
 (function(){let t=null;try{t=localStorage.getItem("lib_theme")}catch{}
 document.documentElement.dataset.theme=t||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")})();
@@ -302,6 +304,21 @@ body.guest .app{padding-bottom:40px}
 .duecard .d b{font-size:24px;font-weight:700} .duecard .d small{font-size:10.5px;margin-top:3px;opacity:.9}
 .duecard .tx span{font-size:12px;opacity:.85} .duecard .tx b{display:block;font-size:16px;font-weight:600}
 .forwho{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;background:var(--soft);box-shadow:var(--sh-in);color:var(--ink)}
+.iocards{display:flex;flex-direction:column;gap:14px}
+.iocards .panel{position:relative}
+.step{position:absolute;top:16px;left:16px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:0 8px 16px -8px var(--c2)}
+.impsum{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.impsum .chip{font-size:12px;font-weight:600;border-radius:999px;padding:4px 12px;background:var(--soft);box-shadow:var(--sh-in)}
+.impsum .ok{color:var(--green-2)} .impsum .upd{color:var(--blue-2)} .impsum .warn{color:var(--sun-2)} .impsum .bad{color:var(--rose)}
+.imptab{margin-top:10px;max-height:320px;overflow:auto;box-shadow:var(--sh-in);background:var(--soft)}
+.imptab td{font-size:12.5px} .imptab tr.r-bad td{color:var(--rose)} .imptab tr.r-bad td b{text-decoration:line-through}
+.imptab tr.r-warn td:last-child{color:var(--sun-2)} .imptab tr.r-upd td:last-child{color:var(--blue-2)}
+.imodes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.imode{border:0;border-radius:18px;padding:12px 10px;text-align:start;background:var(--card);box-shadow:var(--sh-md),var(--hi);display:flex;flex-direction:column;gap:4px;color:var(--ink)}
+.imode b{font-weight:600;font-size:13.5px} .imode span{font-size:11px;color:var(--muted);line-height:1.4}
+.imode[aria-pressed="true"]{background:linear-gradient(150deg,var(--c1),var(--c2));color:#fff;box-shadow:0 14px 24px -12px var(--c2)}
+.imode[aria-pressed="true"] span{color:rgba(255,255,255,.85)}
+@media (max-width:420px){.imodes{grid-template-columns:1fr}}
 .pv{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:15;display:flex;align-items:center;gap:10px;
   background:linear-gradient(135deg,var(--violet-1),var(--violet-2));color:#fff;border-radius:999px;padding:8px 8px 8px 16px;padding-inline-start:16px;box-shadow:0 16px 30px -12px var(--violet-2);font-size:13px;white-space:nowrap}
 .pv button{border:0;border-radius:999px;background:#fff;color:var(--violet-2);font-weight:600;padding:7px 14px}
@@ -464,15 +481,46 @@ function setTheme(t){document.documentElement.dataset.theme=t;try{localStorage.s
   document.querySelector('meta[name="theme-color"]').content=t==="dark"?"#0f141e":"#e9eef5"}
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",e=>{let saved=null;try{saved=localStorage.getItem("lib_theme")}catch{};if(!saved)document.documentElement.dataset.theme=e.matches?"dark":"light"});
 
-/* ================= الاتصال بالشيت ================= */
-async function api(action,data={},asStaff=false){
-  if(!API_URL||API_URL.startsWith("PASTE")) throw new Error("لم يُضبط رابط Apps Script في الملف بعد");
-  const body={action,...data}; if(asStaff){body.user=S.user;body.pin=S.pin}
-  const r=await fetch(API_URL,{method:"POST",body:JSON.stringify(body)});
-  const j=await r.json();
-  if(!j.ok) throw new Error(j.error||"خطأ غير معروف");
-  return j;
+/* ================= الاتصال بقاعدة البيانات (Supabase) ================= */
+let _sb=null;
+function sb(){
+  if(_sb) return _sb;
+  if(!SB_URL||SB_URL.startsWith("PASTE")) throw new Error("لم يُضبط رابط Supabase في الملف بعد");
+  if(typeof supabase==="undefined") throw new Error("تعذّر الاتصال بالخادم");
+  return _sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
 }
+async function api(action,data={},asStaff=false){
+  const p={...data}; if(asStaff){p.user=S.user;p.pin=S.pin}
+  const {data:res,error}=await sb().rpc("lib_api",{p_action:action,p});
+  if(error) throw new Error(/fetch|network/i.test(error.message)?"لا يوجد اتصال بالإنترنت":error.message);
+  return res;
+}
+/* تحديث فوري: أي تغيير في الكتب أو أي إعارة أو طلب جديد يظهر مباشرة على كل الهواتف المفتوحة */
+function live(){
+  if(S._live) return;
+  try{
+    S._live=sb().channel("lib-live")
+      .on("postgres_changes",{event:"*",schema:"public",table:"books"},()=>liveRefresh())
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"events"},()=>liveRefresh())
+      .subscribe();
+  }catch{}
+}
+let _liveT=null;
+function liveRefresh(){
+  clearTimeout(_liveT);
+  _liveT=setTimeout(async()=>{
+    try{
+      const before=newReqs();
+      const j=await api("init"); S.settings=j.settings; S.books=j.books; S.offline=false;
+      try{localStorage.setItem("lib_cache",JSON.stringify(j))}catch{}
+      if(S.user) await loadLoans();
+      if(S.user&&!S.preview&&newReqs()>before) toast("وصل طلب استعارة جديد");
+      const a=document.activeElement, typing=a&&$("#main").contains(a)&&/INPUT|SELECT|TEXTAREA/.test(a.tagName);
+      if(S.view==="scan"||S.view==="data"||typing) S._dirty=true; else render();
+    }catch{}
+  },350);
+}
+document.addEventListener("focusout",()=>{if(S._dirty&&S.view!=="scan"&&S.view!=="data"){setTimeout(()=>{const a=document.activeElement;if(!(a&&$("#main").contains(a)&&/INPUT|SELECT/.test(a.tagName))){S._dirty=false;render()}},50)}});
 async function load(){
   try{
     let j;
@@ -480,6 +528,7 @@ async function load(){
     catch(e){ let c=null; try{c=JSON.parse(localStorage.getItem("lib_cache")||"null")}catch{}; if(!c) throw e; j=c; S.offline=true }
     S.settings=j.settings; S.books=j.books; document.title=S.settings.name;
     if(staff()&&!S.offline) await loadLoans();
+    if(!S.offline) live();
     const qs=new URLSearchParams(location.search), v=qs.get("v"), b=qs.get("b");
     if(v&&["scan","out","add"].includes(v)&&(v==="scan"||staff())) S.view=v;
     render();
@@ -508,12 +557,12 @@ function chrome(){
   document.querySelectorAll("[data-staff]").forEach(b=>b.hidden=!staff());
   $(".dock").hidden=!staff(); document.body.classList.toggle("guest",!staff()); document.body.classList.toggle("preview",S.preview);
   let pv=$("#pvBar"); if(S.preview&&!pv){pv=document.createElement("div");pv.id="pvBar";pv.className="pv";pv.innerHTML=`${icon("eye")}<span>تشاهد المكتبة كزائر</span><button id="exitPreview">رجوع لوضع الأمين</button>`;document.body.appendChild(pv)} else if(!S.preview&&pv) pv.remove();
-  document.querySelectorAll(".dk").forEach(b=>b.setAttribute("aria-current",b.dataset.v===S.view||(S.view==="labels"||S.view==="reports"||S.view==="reqs")&&b.dataset.v==="more"));
+  document.querySelectorAll(".dk").forEach(b=>b.setAttribute("aria-current",b.dataset.v===S.view||["labels","reports","reqs","data"].includes(S.view)&&b.dataset.v==="more"));
 }
 function render(){
   if(!staff()) S.view="catalog";
   if(S.view!=="scan") stopScan();
-  const v={catalog,scan:scanView,out:outView,add:addView,labels:labelsView,reports:reportsView,reqs:reqsView}[S.view]||catalog;
+  const v={catalog,scan:scanView,out:outView,add:addView,labels:labelsView,reports:reportsView,reqs:reqsView,data:dataView}[S.view]||catalog;
   $("#main").innerHTML=v(); chrome();
   if(S.view==="scan") startScan();
   if(S.view==="labels") drawLabelPreview();
@@ -673,6 +722,7 @@ function labelsView(){
   <div id="preview"></div>`;
 }
 function labelBooks(){
+  if(S._labelNums&&S._labelNums.length) return S.books.filter(b=>S._labelNums.includes(b.num));
   if(S._labelsToday) return S.books.filter(b=>b.added===today());
   const f=$("#l_from")?.value,t=$("#l_to")?.value, i1=S.books.findIndex(b=>b.num===f), i2=S.books.findIndex(b=>b.num===t);
   if(i1<0||i2<0) return [];
@@ -701,6 +751,128 @@ function reportsView(){
   <h3>الأكثر إعارة</h3><div class="tw"><table>${top.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="n">${v}</td></tr>`).join("")}</table></div>
   <h3>العمليات حسب الأمين</h3><div class="tw"><table>${Object.entries(stf).map(([k,v])=>`<tr><td>${esc(k)}</td><td class="n">${v}</td></tr>`).join("")}</table></div>
   ${dmg.length?`<h3>نسخ تالفة أو مفقودة</h3><div class="grid">${dmg.map(bookTile).join("")}</div>`:""}`;
+}
+
+/* ================= الاستيراد والتصدير (Excel) ================= */
+const XLSX_SRC="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+function needXLSX(){return window.XLSX?Promise.resolve():new Promise((ok,ko)=>{const x=document.createElement("script");x.src=XLSX_SRC;x.onload=ok;x.onerror=()=>ko(new Error("تعذّر تحميل مكتبة الإكسل، تحقق من الاتصال"));document.head.appendChild(x)})}
+const COLS=[["num","رقم الكتاب"],["title","العنوان"],["author","المؤلف"],["publisher","دار النشر"],["translator","المترجم"],["category","التصنيف"],["owner","المالك"],["library","المكتبة"],["copies","عدد النسخ"],["note","ملاحظات"]];
+const SYN={num:["رقم الكتاب","الرقم","رقم","num"],title:["العنوان","عنوان الكتاب","اسم الكتاب","الكتاب","title"],author:["المؤلف","الكاتب","author"],
+  publisher:["دار النشر","الدار","الناشر","publisher"],translator:["المترجم","الترجمه","translator"],category:["التصنيف","الصنف","category"],
+  owner:["المالك","owner"],library:["المكتبه","المكتبه / المدرسه","المدرسه","library"],copies:["عدد النسخ","النسخ","copies"],note:["ملاحظات","ملاحظه","note"]};
+const keyOf=h=>{const n=norm(String(h).replace(/\(.*?\)/g,"")).replace(/[*:]/g,"").trim();for(const[k,arr]of Object.entries(SYN))if(arr.some(a=>norm(a)===n))return k;return null};
+const IMODES=[["add","إضافة فقط","تُضاف الكتب الجديدة، والأرقام الموجودة تُرفض","c-blue"],["upsert","إضافة وتحديث","الرقم الموجود يُحدَّث، والجديد يُضاف","c-green"],["replace","استبدال كامل","يُمسح الفهرس ويحل الملف مكانه","c-sun"]];
+function sheetDate(){return today()}
+function writeBook(wb,name){wb.Workbook={Views:[{RTL:true}]};XLSX.writeFile(wb,name)}
+async function downloadTemplate(){
+  await needXLSX(); const s=S.settings, wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([COLS.map(c=>c[1])]); ws["!cols"]=[12,32,22,26,20,18,14,16,10,24].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws,"الكتب");
+  const n=Math.max(s.categories.length,s.owners.length,s.libraries.length);
+  const lists=[["التصنيفات","المالكون","المكتبات"]]; for(let i=0;i<n;i++) lists.push([s.categories[i]||"",s.owners[i]||"",s.libraries[i]||""]);
+  const wl=XLSX.utils.aoa_to_sheet(lists); wl["!cols"]=[{wch:22},{wch:16},{wch:18}]; XLSX.utils.book_append_sheet(wb,wl,"القوائم");
+  const help=[["كيف تملأ النموذج"],[""],["• اكتب كتاباً واحداً في كل سطر داخل ورقة «الكتب». العنوان فقط إلزامي."],
+    ["• رقم الكتاب: اتركه فارغاً ليُرقَّم تلقائياً ("+s.prefix+"0001…). اكتبه فقط إن كان للكتاب رقم ملصق من قبل."],
+    ["• عدد النسخ: إن كان عندك 3 نسخ من نفس الكتاب اكتب 3 ويُنشأ لكل نسخة رقم خاص."],
+    ["• التصنيف والمالك والمكتبة: انسخها من ورقة «القوائم» لتبقى موحّدة. القيم الجديدة تُضاف للقوائم تلقائياً."],
+    ["• لتعديل كتب موجودة: صدّر البيانات من التطبيق، عدّل في ورقة الكتب، ثم استوردها بوضع «إضافة وتحديث»."],[""],
+    ["مثال:"],COLS.map(c=>c[1]),["","مزرعة الحيوان","جورج أورويل","دار الساقي","","رواية",s.owners[0]||"",s.libraries[0]||"","2",""]];
+  const wh=XLSX.utils.aoa_to_sheet(help); wh["!cols"]=[{wch:14},{wch:30},{wch:20},{wch:20},{wch:14},{wch:14},{wch:12},{wch:14},{wch:10},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,wh,"تعليمات");
+  writeBook(wb,`نموذج-استيراد-${s.name}.xlsx`); toast("نُزّل النموذج");
+}
+async function exportAll(silentName){
+  await needXLSX(); const j=await api("export",{},true), wb=XLSX.utils.book_new();
+  const bh=["رقم الكتاب","العنوان","المؤلف","دار النشر","المترجم","التصنيف","المالك","المكتبة","الحالة","تاريخ الإضافة","ملاحظات"];
+  const wsb=XLSX.utils.aoa_to_sheet([bh,...j.books.map(b=>[b.num,b.title,b.author,b.publisher,b.translator,b.category,b.owner,b.library,b.status,b.added,b.note])]);
+  wsb["!cols"]=[12,32,22,26,20,18,14,16,10,12,24].map(w=>({wch:w})); XLSX.utils.book_append_sheet(wb,wsb,"الكتب");
+  const lh=["رقم العملية","رقم الكتاب","العنوان","المستعير","الهاتف","القسم / الصفة","تاريخ الإعارة","موعد الإرجاع","أعاره","تاريخ الإرجاع","استلمه","حالة الكتاب عند الإرجاع","ملاحظات"];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([lh,...j.loans.map(l=>[l.id,l.num,l.title,l.borrower,l.phone,l.role,l.out,l.due,l.by,l.ret,l.recvBy,l.cond,l.note])]),"الإعارات");
+  const rh=["رقم الطلب","تاريخ الطلب","رقم الكتاب","العنوان","اسم صاحب الطلب","الهاتف","لمن الكتاب","ملاحظة","الحالة","عالجه","تاريخ المعالجة"];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([rh,...j.requests.map(r=>[r.id,r.at,r.num,r.title,r.name,r.phone,r.forWho,r.note,r.status,r.by,r.doneAt])]),"الطلبات");
+  writeBook(wb,silentName||`${S.settings.name}-${today()}.xlsx`);
+  if(!silentName) toast(`صُدّر ${j.books.length} كتاباً و${j.loans.length} إعارة`);
+}
+async function readImport(file){
+  if(!file) return;
+  try{
+    await needXLSX();
+    const wb=XLSX.read(await file.arrayBuffer(),{type:"array"});
+    const name=wb.SheetNames.find(n=>norm(n)===norm("الكتب"))||wb.SheetNames[0];
+    const raw=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:"",raw:false}).filter(r=>r.some(c=>String(c).trim()!==""));
+    if(raw.length<2) throw new Error("الملف فارغ أو بلا سطور تحت العناوين");
+    const keys=raw[0].map(keyOf);
+    if(!keys.includes("title")) throw new Error("لم أجد عمود «العنوان». استعمل النموذج من التطبيق");
+    S.impResult=null;
+    S.imp={file:file.name,mode:S.imp?.mode||"add",rows:raw.slice(1).map((r,i)=>{const o={line:i+2};keys.forEach((k,ci)=>{if(k)o[k]=String(r[ci]??"").trim()});return o}),confirm:""};
+    S.imp.ignored=raw[0].filter((h,i)=>String(h).trim()&&!keys[i]);
+    validateImport(); render();
+  }catch(e){toast(e.message,true)}
+}
+function validateImport(){
+  const I=S.imp, have=new Set(S.books.map(b=>b.num.toUpperCase())), seen=new Map(), cats=new Set(S.settings.categories);
+  I.rows.forEach(r=>{const n=(r.num||"").toUpperCase(); if(n) seen.set(n,(seen.get(n)||0)+1)});
+  I.rows.forEach(r=>{
+    r.st="ok"; r.msg=""; const n=(r.num||"").toUpperCase(), c=parseInt(String(r.copies||"").replace(/\D/g,""))||1;
+    if(!r.title){r.st="bad";r.msg="العنوان فارغ";return}
+    if(n&&seen.get(n)>1){r.st="bad";r.msg="الرقم مكرر داخل الملف";return}
+    if(n&&have.has(n)){ if(I.mode==="add"){r.st="bad";r.msg="الرقم موجود مسبقاً";return} r.st="upd";r.msg="سيُحدَّث" }
+    const w=[]; if(r.category&&!cats.has(r.category)) w.push("تصنيف جديد سيُضاف"); if(n&&c>1) w.push("الرقم محدد فتُنشأ نسخة واحدة"); if(r.copies&&!/^\d+$/.test(r.copies)) w.push("عدد النسخ غير رقمي (1)");
+    if(!n&&c>1) r.msg=(r.msg?r.msg+" · ":"")+`${c} نسخ`;
+    if(w.length){ if(r.st==="ok") r.st="warn"; r.msg=[r.msg,...w].filter(Boolean).join(" · ") }
+  });
+  const fileNums=new Set(I.rows.filter(r=>r.num&&r.st!=="bad").map(r=>r.num.toUpperCase()));
+  I.willDelete=I.mode==="replace"?S.books.filter(b=>!fileNums.has(b.num.toUpperCase())):[];
+  I.blocked=I.willDelete.filter(b=>b.status==="معار");
+}
+function dataView(){
+  const I=S.imp;
+  let imp="";
+  if(I){
+    const cnt=k=>I.rows.filter(r=>r.st===k).length, ok=I.rows.filter(r=>r.st!=="bad").length;
+    const copiesTotal=I.rows.filter(r=>r.st!=="bad").reduce((a,r)=>a+(r.num?1:(parseInt(String(r.copies||"").replace(/\D/g,""))||1)),0);
+    imp=`<div class="impsum"><span class="chip ok">✓ ${cnt("ok")} سليم</span>${cnt("upd")?`<span class="chip upd">↻ ${cnt("upd")} تحديث</span>`:""}${cnt("warn")?`<span class="chip warn">⚠ ${cnt("warn")} تنبيه</span>`:""}${cnt("bad")?`<span class="chip bad">✗ ${cnt("bad")} مرفوض</span>`:""}</div>
+    ${I.ignored.length?`<p class="by">أعمدة غير معروفة تم تجاهلها: ${I.ignored.map(esc).join("، ")}</p>`:""}
+    <div class="tw imptab"><table><tr><th>سطر</th><th>العنوان</th><th>الرقم</th><th>المؤلف</th><th>ملاحظة</th></tr>
+      ${I.rows.slice(0,200).map(r=>`<tr class="r-${r.st}"><td class="n">${r.line}</td><td><b>${esc(r.title)||"—"}</b></td><td class="code">${esc(r.num)||"تلقائي"}</td><td>${esc(r.author)}</td><td>${esc(r.msg)}</td></tr>`).join("")}</table>
+      ${I.rows.length>200?`<p class="by">… و${I.rows.length-200} سطر آخر</p>`:""}</div>
+    <h3>طريقة الاستيراد</h3>
+    <div class="imodes">${IMODES.map(([k,l,d,c])=>`<button class="imode ${c}" data-imode="${k}" aria-pressed="${I.mode===k}"><b>${l}</b><span>${d}</span></button>`).join("")}</div>
+    ${I.mode==="replace"?(I.blocked.length?`<div class="callout sun"><b>لا يمكن الاستبدال الآن:</b> هذه الكتب معارة وغير موجودة في الملف: ${I.blocked.map(b=>`${esc(b.title)} (${esc(b.num)})`).join("، ")}. أضفها إلى الملف أو سجّل إرجاعها أولاً.</div>`
+      :`<div class="callout sun">سيُحذف <b>${I.willDelete.length}</b> كتاباً غير موجود في الملف. سجل الإعارات القديم لا يُحذف، وتُحفظ نسخة إكسل من بياناتك الحالية تلقائياً قبل التنفيذ.</div>
+        <div class="form"><label>للتأكيد اكتب كلمة: استبدال<input id="impConfirm" value="${esc(I.confirm)}" autocomplete="off"></label></div>`):""}
+    <div class="actions"><button class="btn ${IMODES.find(m=>m[0]===I.mode)[3]}" id="doImport" ${!ok||(I.mode==="replace"&&I.blocked.length)?"disabled":""}>استيراد ${ok} سطر (${copiesTotal} نسخة)</button><button class="btn flat" id="impCancel">إلغاء</button></div>`;
+  }
+  const R=S.impResult;
+  return `<div class="sechead" style="margin-top:0"><h2>استيراد <em>وتصدير</em></h2></div>
+  <div class="iocards">
+    <div class="panel"><div class="step c-blue"><span>1</span></div><h2>نموذج الإدخال</h2><p class="by">ملف إكسل فيه الأعمدة الصحيحة، وورقة بقوائم التصنيفات والمالكين، وتعليمات مع مثال.</p>
+      <div class="actions"><button class="btn c-blue" id="dlTpl">تحميل النموذج</button></div></div>
+    <div class="panel"><div class="step c-green"><span>2</span></div><h2>استيراد الكتب</h2><p class="by">اختر ملف الإكسل بعد ملئه. تُعرض المعاينة قبل أي حفظ.</p>
+      <div class="actions"><label class="btn c-green" for="impFile">اختيار ملف</label><input type="file" id="impFile" accept=".xlsx,.xls,.csv" hidden></div>
+      ${I?`<p class="by" style="margin-top:10px">الملف: <b>${esc(I.file)}</b> · ${I.rows.length} سطر</p>${imp}`:""}
+      ${R?`<div class="callout violet" style="margin-top:14px">تم الاستيراد: أُضيف <b>${R.added.length}</b>، حُدّث <b>${R.updated}</b>${R.deleted?`، حُذف <b>${R.deleted}</b>`:""}${R.skipped.length?`، تُرك <b>${R.skipped.length}</b> (${R.skipped.slice(0,5).map(x=>(x.title?"«"+esc(x.title)+"»: ":"")+esc(x.reason)).join("، ")})`:""}.</div>
+        ${R.added.length?`<div class="actions"><button class="btn c-sun" id="printBatch">${icon("label")}طباعة ملصقات ${R.added.length} كتاب جديد</button></div>`:""}`:""}
+    </div>
+    <div class="panel"><div class="step c-violet"><span>3</span></div><h2>تصدير البيانات</h2><p class="by">ملف إكسل بثلاث أوراق: الكتب، الإعارات، الطلبات. يصلح نسخةً احتياطية وللتعديل ثم إعادة الاستيراد.</p>
+      <div class="actions"><button class="btn c-violet" id="doExport">تصدير الآن</button></div></div>
+  </div>`;
+}
+async function runImport(btn){
+  const I=S.imp; validateImport();
+  if(I.mode==="replace"){
+    if(I.blocked.length) return toast("هناك كتب معارة ستُحذف",true);
+    if(norm(($("#impConfirm")?.value||""))!==norm("استبدال")) return toast("اكتب كلمة «استبدال» للتأكيد",true);
+    toast("أحفظ نسخة احتياطية أولاً…"); await exportAll(`نسخة-احتياطية-قبل-الاستبدال-${today()}.xlsx`);
+  }
+  const rows=I.rows.filter(r=>r.st!=="bad").map(({line,st,msg,...r})=>r);
+  btn.disabled=true; btn.textContent="جارٍ الاستيراد…";
+  try{
+    const res={added:[],updated:0,deleted:0,skipped:[]};
+    const chunks=I.mode==="replace"?[rows]:Array.from({length:Math.ceil(rows.length/300)},(_,i)=>rows.slice(i*300,i*300+300));
+    for(const ch of chunks){const j=await api("import",{mode:I.mode,rows:ch},true);res.added.push(...j.added);res.updated+=j.updated;res.deleted+=j.deleted;res.skipped.push(...j.skipped.map(x=>({...x,title:(ch[x.row-1]||{}).title||""})))}
+    S.impResult=res; S.imp=null; await refresh(); toast("تم الاستيراد");
+  }catch(e){toast(e.message,true);btn.disabled=false;render()}
 }
 
 /* ================= الصفحات المنبثقة ================= */
@@ -829,7 +1001,7 @@ function moreSheet(){
   const t=(v,cls,ic,l)=>`<button class="tile ${cls}" ${v}><span class="ring">${icon(ic)}</span><b>${l}</b></button>`;
   sheet(`<div class="sechead" style="margin-top:0"><h2>المزيد</h2></div><div class="more">
     ${t('id="shareLink"',"c-blue","share","مشاركة الرابط")}${t('id="viewGuest"',"c-violet","eye","عرض كزائر")}
-    ${t('data-v="reqs"',"c-green","user","الطلبات").replace("</button>",newReqs()?`<span class="cnt">${newReqs()}</span></button>`:"</button>")}${t('data-v="labels"',"c-sun","label","الملصقات")}${t('data-v="reports"',"c-blue","chart","التقارير")}${t('id="doLogout"',"c-violet","exit","خروج")}</div>`);
+    ${t('data-v="reqs"',"c-green","user","الطلبات").replace("</button>",newReqs()?`<span class="cnt">${newReqs()}</span></button>`:"</button>")}${t('data-v="labels"',"c-sun","label","الملصقات")}${t('data-v="reports"',"c-blue","chart","التقارير")}${t('data-v="data"',"c-green","grid","استيراد وتصدير")}${t('id="doLogout"',"c-violet","exit","خروج")}</div>`);
 }
 function logout(){S.user=S.pin=null;S.loans=null;try{localStorage.removeItem("lib_auth")}catch{};S.view="catalog";render()}
 
@@ -871,11 +1043,17 @@ async function busy(form,fn){form.classList.add("loading");try{await fn()}catch(
 const sheetNum=f=>f.closest(".sheet").querySelector("[data-num]").textContent;
 
 document.addEventListener("click",async e=>{
-  const t=e.target.closest("[data-v],[data-open],[data-status],[data-cat],[data-close],[data-lend],[data-return],[data-qrshow],[data-due],[data-req],[data-rq],[data-rqlend],[data-for],[data-months],[data-flip],[data-expand],[data-layout],[data-pick],#whoBtn,#themeBtn,#doLogout,#shareLink,#viewGuest,#exitPreview,#copyLink,#nativeShare,#dlQr,#l_print,#l_today,#doInstall,#noInstall");
+  const t=e.target.closest("[data-v],[data-open],[data-status],[data-cat],[data-close],[data-lend],[data-return],[data-qrshow],[data-due],[data-req],[data-rq],[data-rqlend],[data-for],[data-months],[data-flip],[data-expand],[data-layout],[data-pick],#whoBtn,#themeBtn,#doLogout,#dlTpl,#doExport,[data-imode],#impCancel,#doImport,#printBatch,#shareLink,#viewGuest,#exitPreview,#copyLink,#nativeShare,#dlQr,#l_print,#l_today,#doInstall,#noInstall");
   if(!t) return; const d=t.dataset;
   if(d.req){requestSheet(d.req);return}
   if(d.rq){try{await api("setRequest",{id:d.rq,status:d.st},true);toast("الطلب: "+d.st);await loadLoans();render()}catch(err){toast(err.message,true)}return}
   if(d.rqlend){const r=S.reqs.find(x=>x.id===d.rqlend);lendSheet(r.num,{who:r.name,phone:r.phone,role:r.forWho&&r.forWho!=="لنفسه"?"لـ "+r.forWho:"",reqId:r.id});return}
+  if(t.id==="dlTpl"){try{await downloadTemplate()}catch(err){toast(err.message,true)}return}
+  if(t.id==="doExport"){try{await exportAll()}catch(err){toast(err.message,true)}return}
+  if(d.imode){S.imp.confirm=$("#impConfirm")?.value||"";S.imp.mode=d.imode;validateImport();render();return}
+  if(t.id==="impCancel"){S.imp=null;render();return}
+  if(t.id==="doImport"){if(S.imp)S.imp.confirm=$("#impConfirm")?.value||"";await runImport(t);return}
+  if(t.id==="printBatch"){S._labelNums=S.impResult.added.slice();S._labelsToday=false;S.view="labels";render();return}
   if(t.id==="shareLink"){shareSheet();return}
   if(t.id==="viewGuest"){closeSheet();S.preview=true;S.view="catalog";render();scrollTo({top:0});toast("هكذا يرى الزوار المكتبة");return}
   if(t.id==="exitPreview"){S.preview=false;render();toast("عدت إلى وضع الأمين");return}
@@ -907,10 +1085,10 @@ document.addEventListener("click",async e=>{
   else if(d.return) returnSheet(d.return);
   else if(d.due) $("#l_due").value=addDays($("#l_out").value||today(),+d.due);
   else if(d.qrshow){const slot=$("#qrSlot");slot.innerHTML=`<div class="qrbox"><div class="q" data-qr="${esc(d.qrshow)}"></div><div style="min-width:0"><b class="code">${esc(d.qrshow)}</b><p class="by" style="overflow-wrap:anywhere;direction:ltr">${esc(bookUrl(d.qrshow))}</p></div></div>`;fillQR(slot,120)}
-  else if(t.id==="l_today"){S._labelsToday=!S._labelsToday;t.textContent=S._labelsToday?"كل النطاق":"المضافة اليوم فقط";drawLabelPreview()}
+  else if(t.id==="l_today"){S._labelNums=null;S._labelsToday=!S._labelsToday;t.textContent=S._labelsToday?"كل النطاق":"المضافة اليوم فقط";drawLabelPreview()}
   else if(t.id==="l_print"){const bs=labelBooks();if(!bs.length)return toast("لا كتب للطباعة",true);const p=$("#print");p.innerHTML=bs.map(labelHtml).join("");fillQR(p,110);setTimeout(()=>window.print(),300)}
 });
-document.addEventListener("change",e=>{if(e.target.id==="l_due"||e.target.id==="l_out"){const o=$("#l_out").value||today(),u=$("#l_due").value;if(e.target.id==="l_out"){const p=document.querySelector(".durs [aria-pressed=true]");if(p&&+p.dataset.months)$("#l_due").value=addMonths(o,+p.dataset.months)}else document.querySelectorAll(".durs button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.months==="0"));$("#dueBox").innerHTML=u&&$("#l_due").value>=o?dueCard(o,$("#l_due").value):`<div class="callout sun">تاريخ الإرجاع يجب أن يكون بعد تاريخ الإعارة</div>`;return}
+document.addEventListener("change",e=>{if(e.target.id==="impFile"){readImport(e.target.files[0]);return}if(e.target.id==="l_from"||e.target.id==="l_to")S._labelNums=null;if(e.target.id==="l_due"||e.target.id==="l_out"){const o=$("#l_out").value||today(),u=$("#l_due").value;if(e.target.id==="l_out"){const p=document.querySelector(".durs [aria-pressed=true]");if(p&&+p.dataset.months)$("#l_due").value=addMonths(o,+p.dataset.months)}else document.querySelectorAll(".durs button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.months==="0"));$("#dueBox").innerHTML=u&&$("#l_due").value>=o?dueCard(o,$("#l_due").value):`<div class="callout sun">تاريخ الإرجاع يجب أن يكون بعد تاريخ الإعارة</div>`;return}
   if(e.target.id==="l_from"||e.target.id==="l_to"){S._labelsToday=false;drawLabelPreview()}});
 function manualResults(){
   const q=$("#mnum").value, box=$("#mres"); if(!box) return;
