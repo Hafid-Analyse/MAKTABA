@@ -285,6 +285,23 @@ body.guest .app{padding-bottom:40px}
 .fc .lent .hint{color:rgba(255,255,255,.75)}
 @media (prefers-reduced-motion:reduce){.fc-in{transition:none}}
 .mres{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:var(--soft);box-shadow:var(--sh-in);border-radius:18px;padding:5px}
+.choice button{border:0;border-radius:14px;padding:10px;background:transparent;color:var(--muted);font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px}
+.choice button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:var(--sh-md),var(--hi)}
+.choice button .ico{width:18px;height:18px}
+.fieldnote{font-size:12px;font-weight:500;min-height:1.2em;margin-top:-4px}
+.fieldnote.ok{color:var(--green-2)} .fieldnote.bad{color:var(--sun-2)}
+.form input.bad{box-shadow:var(--sh-in),0 0 0 2px var(--sun-2)} .form input.good{box-shadow:var(--sh-in),0 0 0 2px var(--green-1)}
+.durs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.durs button{border:0;border-radius:16px;padding:10px 4px;background:var(--card);box-shadow:var(--sh-md),var(--hi);font-weight:600;font-size:13px;color:var(--ink)}
+.durs button small{display:block;font-weight:400;font-size:10.5px;color:var(--muted)}
+.durs button[aria-pressed="true"]{background:linear-gradient(150deg,var(--blue-1),var(--blue-2));color:#fff;box-shadow:0 12px 22px -12px var(--blue-2)}
+.durs button[aria-pressed="true"] small{color:rgba(255,255,255,.85)}
+.duecard{display:flex;align-items:center;gap:14px;border-radius:var(--r-md);padding:12px 16px;color:#fff;background:linear-gradient(135deg,var(--violet-1),var(--violet-2));box-shadow:0 16px 28px -14px var(--violet-2);animation:rise .25s}
+.duecard .d{width:58px;height:58px;border-radius:16px;background:rgba(255,255,255,.18);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;flex:0 0 auto}
+.duecard .d b{font-size:24px;font-weight:700} .duecard .d small{font-size:10.5px;margin-top:3px;opacity:.9}
+.duecard .tx span{font-size:12px;opacity:.85} .duecard .tx b{display:block;font-size:16px;font-weight:600}
+.forwho{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;background:var(--soft);box-shadow:var(--sh-in);color:var(--ink)}
 .pv{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:15;display:flex;align-items:center;gap:10px;
   background:linear-gradient(135deg,var(--violet-1),var(--violet-2));color:#fff;border-radius:999px;padding:8px 8px 8px 16px;padding-inline-start:16px;box-shadow:0 16px 30px -12px var(--violet-2);font-size:13px;white-space:nowrap}
 .pv button{border:0;border-radius:999px;background:#fff;color:var(--violet-2);font-weight:600;padding:7px 14px}
@@ -416,6 +433,29 @@ function matches(b,q,withNum){
   q=norm(q); if(!q) return true;
   const fields=[b.title,b.author].concat(withNum?[b.num]:[]).map(norm);
   return fields.some(f=>f.startsWith(q)||f.split(/\s+/).some(w=>w.startsWith(q)||(w.startsWith("ال")&&w.slice(2).startsWith(q))));
+}
+/* الهاتف: 10 أرقام تبدأ بـ 05 أو 06 أو 07 */
+const phoneDigits=v=>String(v||"").replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/\D/g,"");
+const phoneOk=v=>/^0[567]\d{8}$/.test(phoneDigits(v));
+function phoneHint(inp){
+  const note=inp.parentElement.querySelector(".fieldnote"), d=phoneDigits(inp.value), req=inp.required;
+  let msg="",cls="";
+  if(!d){msg=req?"":"";}
+  else if(!/^0/.test(d)||(d.length>=2&&!/^0[567]/.test(d))) {msg="يجب أن يبدأ الرقم بـ 05 أو 06 أو 07";cls="bad"}
+  else if(d.length<10){msg=`${d.length} من 10 أرقام`;cls="bad"}
+  else if(d.length>10){msg="الرقم أطول من 10 أرقام";cls="bad"}
+  else {msg="✓ رقم صحيح";cls="ok"}
+  if(note){note.textContent=msg;note.className="fieldnote "+cls}
+  inp.classList.toggle("bad",cls==="bad");inp.classList.toggle("good",cls==="ok");
+}
+const AR_DAYS=["الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+const AR_MONTHS=["جانفي","فيفري","مارس","أفريل","ماي","جوان","جويلية","أوت","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+function addMonths(s,n){const d=new Date(s+"T12:00:00"),day=d.getDate();d.setMonth(d.getMonth()+n);if(d.getDate()<day)d.setDate(0);return d.toISOString().slice(0,10)}
+function dueCard(out,due){
+  if(!due) return "";
+  const d=new Date(due+"T12:00:00"), n=days(out,due);
+  return `<div class="duecard"><div class="d"><b>${d.getDate()}</b><small>${AR_MONTHS[d.getMonth()]}</small></div>
+    <div class="tx"><span>يعود الكتاب قبل</span><b>${AR_DAYS[d.getDay()]} ${d.getDate()} ${AR_MONTHS[d.getMonth()]} ${d.getFullYear()}</b><span>مدة الإعارة ${n} يوماً</span></div></div>`;
 }
 const initial=t=>(String(t||"؟").replace(/^(ال)/,"").trim()[0]||"؟");
 
@@ -701,9 +741,11 @@ function lendSheet(num,pre){
   sheet(`<div class="hero c-blue"><span class="ic">${icon("out")}</span><div class="tx"><h2>إعارة «${esc(b.title)}»</h2><span class="code" data-num>${esc(num)}</span><p class="by">على يد: <b>${esc(S.user)}</b></p></div></div>
   <form class="form" id="lendForm">
     <label>اسم المستعير<input id="l_who" required list="dlB" autocomplete="off" value="${esc(pre.who)}"></label>${dl("dlB",names)}
-    <div class="row2"><label>الهاتف<input id="l_phone" type="tel" dir="ltr" value="${esc(pre.phone)}"></label><label>القسم / الصفة<input id="l_role" placeholder="4 ابتدائي، ولي، معلم…" value="${esc(pre.role)}"></label></div>
-    <div class="row2"><label>تاريخ الإعارة<input id="l_out" type="date" value="${today()}"></label><label>يعود قبل<input id="l_due" type="date" value="${addDays(today(),s.loanDays)}"></label></div>
-    <div class="chiprow">${[7,14,30].map(n=>`<button type="button" class="cat" data-due="${n}">${n===7?"أسبوع":n===14?"أسبوعان":"شهر"}</button>`).join("")}</div>
+    <div class="row2"><label>الهاتف<input id="l_phone" type="tel" inputmode="numeric" dir="ltr" maxlength="14" value="${esc(pre.phone)}" data-phone placeholder="اختياري"><span class="fieldnote"></span></label><label>القسم / الصفة<input id="l_role" placeholder="4 ابتدائي، ولي، معلم…" value="${esc(pre.role)}"></label></div>
+    <label>مدة الإعارة</label>
+    <div class="durs">${[[1,"شهر"],[2,"شهران"],[3,"3 أشهر"]].map(([n,l])=>`<button type="button" data-months="${n}" aria-pressed="${n===1}">${l}<small>${addMonths(today(),n).slice(5).split("-").reverse().join("/")}</small></button>`).join("")}<button type="button" data-months="0" aria-pressed="false">تاريخ آخر<small>اختر</small></button></div>
+    <div id="dueBox">${dueCard(today(),addMonths(today(),1))}</div>
+    <div class="row2"><label>تاريخ الإعارة<input id="l_out" type="date" value="${today()}"></label><label>يعود قبل<input id="l_due" type="date" value="${addMonths(today(),1)}"></label></div>
     <label>ملاحظة (حالة الكتاب عند الخروج…)<input id="l_note"></label>
     <div class="actions"><button class="btn c-blue" type="submit">تأكيد الإعارة</button><button class="btn flat" type="button" data-close>إلغاء</button></div>
   </form>`);
@@ -743,8 +785,10 @@ function requestSheet(num){
   sheet(`<div class="hero ${catPal(b.category)}"><span class="ic">${esc(initial(b.title))}</span><div class="tx"><h2>طلب «${esc(b.title)}»</h2><span class="code" data-num>${esc(num)}</span>${b.author?`<p class="by">${esc(b.author)}</p>`:""}</div></div>
   <form class="form" id="reqForm">
     <label>الاسم الكامل<input id="q_name" required autocomplete="name"></label>
-    <label>رقم الهاتف<input id="q_phone" type="tel" dir="ltr" required autocomplete="tel" placeholder="05xx xx xx xx"></label>
-    <label>لمن الكتاب؟ (اسم التلميذ والقسم، اختياري)<input id="q_for"></label>
+    <label>رقم الهاتف<input id="q_phone" type="tel" inputmode="numeric" dir="ltr" required autocomplete="tel" maxlength="14" placeholder="05 / 06 / 07 ثم 8 أرقام" data-phone><span class="fieldnote"></span></label>
+    <label>لمن الكتاب؟</label>
+    <div class="choice" role="group" aria-label="لمن الكتاب"><button type="button" data-for="self" aria-pressed="true">${icon("user")}لي أنا</button><button type="button" data-for="other" aria-pressed="false">${icon("share")}لشخص آخر</button></div>
+    <div class="row2" id="q_other" hidden><label>اسمه<input id="q_for"></label><label>القسم / الصفة<input id="q_class" placeholder="مثلاً: 3 ابتدائي"></label></div>
     <label>ملاحظة (اختياري)<input id="q_note"></label>
     <input class="hp" id="q_web" tabindex="-1" autocomplete="off" aria-hidden="true">
     ${b.status==="معار"?`<div class="callout">الكتاب معار حالياً. يُسجَّل طلبك ويتواصل معك أمين المكتبة عند عودته.</div>`:""}
@@ -765,7 +809,8 @@ function reqsView(){
   return `<div class="sechead" style="margin-top:0"><h2>طلبات <em>الاستعارة</em></h2><span>${newReqs()} جديد</span></div>
   <div class="loans">${list.map(r=>{const bk=S.books.find(x=>x.num===r.num);return `<div class="req">
     <div class="hd"><div><b>${esc(r.title)}</b> <span class="code" style="color:var(--muted)">${esc(r.num)}</span><p>${bk?`الكتاب الآن: ${esc(bk.status)}`:""}</p></div><span class="rs ${RS[r.status]||"c-blue"}">${esc(r.status)}</span></div>
-    <p><b style="color:var(--ink)">${esc(r.name)}</b> · <span dir="ltr">${esc(r.phone)}</span>${r.forWho?" · "+esc(r.forWho):""}</p>
+    <p><b style="color:var(--ink)">${esc(r.name)}</b> · <span dir="ltr">${esc(r.phone)}</span></p>
+    <p><span class="forwho">${icon("user")}${!r.forWho||r.forWho==="لنفسه"?"الكتاب لصاحب الطلب نفسه":"الكتاب لـ: "+esc(r.forWho)}</span></p>
     ${r.note?`<p>${esc(r.note)}</p>`:""}<p>طُلب في ${esc(r.at)}${r.by?" · عالجه "+esc(r.by):""}</p>
     <div class="actions" style="margin-top:10px">
       ${r.status==="جديد"?`<button class="btn sm c-green" data-rq="${esc(r.id)}" data-st="مقبول">قبول</button><button class="btn sm flat" data-rq="${esc(r.id)}" data-st="مرفوض">رفض</button>`:""}
@@ -826,17 +871,23 @@ async function busy(form,fn){form.classList.add("loading");try{await fn()}catch(
 const sheetNum=f=>f.closest(".sheet").querySelector("[data-num]").textContent;
 
 document.addEventListener("click",async e=>{
-  const t=e.target.closest("[data-v],[data-open],[data-status],[data-cat],[data-close],[data-lend],[data-return],[data-qrshow],[data-due],[data-req],[data-rq],[data-rqlend],[data-flip],[data-expand],[data-layout],[data-pick],#whoBtn,#themeBtn,#doLogout,#shareLink,#viewGuest,#exitPreview,#copyLink,#nativeShare,#dlQr,#l_print,#l_today,#doInstall,#noInstall");
+  const t=e.target.closest("[data-v],[data-open],[data-status],[data-cat],[data-close],[data-lend],[data-return],[data-qrshow],[data-due],[data-req],[data-rq],[data-rqlend],[data-for],[data-months],[data-flip],[data-expand],[data-layout],[data-pick],#whoBtn,#themeBtn,#doLogout,#shareLink,#viewGuest,#exitPreview,#copyLink,#nativeShare,#dlQr,#l_print,#l_today,#doInstall,#noInstall");
   if(!t) return; const d=t.dataset;
   if(d.req){requestSheet(d.req);return}
   if(d.rq){try{await api("setRequest",{id:d.rq,status:d.st},true);toast("الطلب: "+d.st);await loadLoans();render()}catch(err){toast(err.message,true)}return}
-  if(d.rqlend){const r=S.reqs.find(x=>x.id===d.rqlend);lendSheet(r.num,{who:r.name,phone:r.phone,role:r.forWho,reqId:r.id});return}
+  if(d.rqlend){const r=S.reqs.find(x=>x.id===d.rqlend);lendSheet(r.num,{who:r.name,phone:r.phone,role:r.forWho&&r.forWho!=="لنفسه"?"لـ "+r.forWho:"",reqId:r.id});return}
   if(t.id==="shareLink"){shareSheet();return}
   if(t.id==="viewGuest"){closeSheet();S.preview=true;S.view="catalog";render();scrollTo({top:0});toast("هكذا يرى الزوار المكتبة");return}
   if(t.id==="exitPreview"){S.preview=false;render();toast("عدت إلى وضع الأمين");return}
   if(t.id==="copyLink"){const u=siteUrl();try{await navigator.clipboard.writeText(u);toast("نُسخ الرابط")}catch{const r=document.createRange();r.selectNodeContents($(".linkbox code"));getSelection().removeAllRanges();getSelection().addRange(r);toast("حدّد الرابط وانسخه يدوياً")}return}
   if(t.id==="nativeShare"){try{await navigator.share({title:S.settings.name,text:"تصفّح كتب "+S.settings.name+" واطلب الاستعارة:",url:siteUrl()})}catch{}return}
   if(t.id==="dlQr"){const c=qrPoster();if(!c)return toast("تعذّر تجهيز الصورة",true);const a=document.createElement("a");a.download="qr-"+S.settings.name+".png";a.href=c.toDataURL("image/png");document.body.appendChild(a);a.click();a.remove();return}
+  if(d.for){t.parentElement.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b===t));$("#q_other").hidden=d.for!=="other";if(d.for==="other")$("#q_for").focus();return}
+  if(d.months!==undefined){t.parentElement.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b===t));
+    const out=$("#l_out").value||today();
+    if(+d.months){$("#l_due").value=addMonths(out,+d.months);$("#dueBox").innerHTML=dueCard(out,$("#l_due").value)}
+    else{$("#l_due").focus();try{$("#l_due").showPicker()}catch{}}
+    return}
   if(d.flip!==undefined){t.classList.toggle("flip");return}
   if(d.expand!==undefined){const r=t.closest(".rw"),o=r.classList.toggle("open");t.setAttribute("aria-expanded",o);return}
   if(d.layout){S.layout=d.layout;try{localStorage.setItem("lib_layout",d.layout)}catch{};render();return}
@@ -859,7 +910,8 @@ document.addEventListener("click",async e=>{
   else if(t.id==="l_today"){S._labelsToday=!S._labelsToday;t.textContent=S._labelsToday?"كل النطاق":"المضافة اليوم فقط";drawLabelPreview()}
   else if(t.id==="l_print"){const bs=labelBooks();if(!bs.length)return toast("لا كتب للطباعة",true);const p=$("#print");p.innerHTML=bs.map(labelHtml).join("");fillQR(p,110);setTimeout(()=>window.print(),300)}
 });
-document.addEventListener("change",e=>{if(e.target.id==="l_from"||e.target.id==="l_to"){S._labelsToday=false;drawLabelPreview()}});
+document.addEventListener("change",e=>{if(e.target.id==="l_due"||e.target.id==="l_out"){const o=$("#l_out").value||today(),u=$("#l_due").value;if(e.target.id==="l_out"){const p=document.querySelector(".durs [aria-pressed=true]");if(p&&+p.dataset.months)$("#l_due").value=addMonths(o,+p.dataset.months)}else document.querySelectorAll(".durs button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.months==="0"));$("#dueBox").innerHTML=u&&$("#l_due").value>=o?dueCard(o,$("#l_due").value):`<div class="callout sun">تاريخ الإرجاع يجب أن يكون بعد تاريخ الإعارة</div>`;return}
+  if(e.target.id==="l_from"||e.target.id==="l_to"){S._labelsToday=false;drawLabelPreview()}});
 function manualResults(){
   const q=$("#mnum").value, box=$("#mres"); if(!box) return;
   if(!norm(q)){box.innerHTML="";return}
@@ -867,13 +919,17 @@ function manualResults(){
   box.innerHTML=list.length?list.map(b=>`<button class="mr ${catPal(b.category)}" data-pick="${esc(b.num)}"><span class="ic">${esc(initial(b.title))}</span><span class="tx"><b>${esc(b.title)}</b><small>${esc(b.author)||"—"} · <span class="code">${esc(b.num)}</span></small></span><span class="st st-${esc(b.status)}">${esc(b.status)}</span></button>`).join("")
     :`<div class="empty" style="padding:18px">لا يوجد كتاب يبدأ بـ «${esc(q)}»</div>`;
 }
-document.addEventListener("input",e=>{if(e.target.id==="mnum"){manualResults();return}if(e.target.id==="q"){S.q=e.target.value;const pos=e.target.selectionStart;render();const q=$("#q");q.focus();q.setSelectionRange(pos,pos)}});
+document.addEventListener("input",e=>{if(e.target.matches?.("[data-phone]")){phoneHint(e.target);return}if(e.target.id==="mnum"){manualResults();return}if(e.target.id==="q"){S.q=e.target.value;const pos=e.target.selectionStart;render();const q=$("#q");q.focus();q.setSelectionRange(pos,pos)}});
 document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches?.("[data-flip]")){e.preventDefault();e.target.classList.toggle("flip");return}if(e.key==="Escape")closeSheet();if(e.key==="Enter"&&e.target.id==="q"){const v=e.target.value.trim();const hit=S.books.find(b=>b.num.toUpperCase()===v.toUpperCase());if(hit)openBook(hit.num)}});
 document.addEventListener("submit",async e=>{
   e.preventDefault(); const f=e.target;
   if(f.id==="manual"){const v=$("#mnum").value.trim();const hit=S.books.find(b=>b.num.toUpperCase()===v.toUpperCase())||S.books.find(b=>matches(b,v,true));if(!hit)return toast("لا يوجد كتاب مطابق",true);await stopScan();S.view="catalog";render();openBook(hit.num)}
   else if(f.id==="reqForm") busy(f,async()=>{
-    await api("request",{num:sheetNum(f),name:$("#q_name").value,phone:$("#q_phone").value,forWho:$("#q_for").value,note:$("#q_note").value,website:$("#q_web").value});
+    if(!phoneOk($("#q_phone").value)){phoneHint($("#q_phone"));$("#q_phone").focus();throw new Error("رقم الهاتف: 10 أرقام تبدأ بـ 05 أو 06 أو 07")}
+    const other=!$("#q_other").hidden, forName=$("#q_for").value.trim(), cls=$("#q_class").value.trim();
+    if(other&&!forName){$("#q_for").focus();throw new Error("اكتب اسم الشخص الذي سيأخذ الكتاب")}
+    const forWho=other?[forName,cls].filter(Boolean).join(" - "):"لنفسه";
+    await api("request",{num:sheetNum(f),name:$("#q_name").value,phone:phoneDigits($("#q_phone").value),forWho,note:$("#q_note").value,website:$("#q_web").value});
     requestDone();
   });
   else if(f.id==="loginForm") busy(f,async()=>{
@@ -883,7 +939,9 @@ document.addEventListener("submit",async e=>{
   });
   else if(f.id==="lendForm") busy(f,async()=>{
     const num=sheetNum(f);
-    await api("lend",{num,borrower:$("#l_who").value,phone:$("#l_phone").value,role:$("#l_role").value,out:$("#l_out").value,due:$("#l_due").value,note:$("#l_note").value},true);
+    if($("#l_phone").value.trim()&&!phoneOk($("#l_phone").value)){phoneHint($("#l_phone"));$("#l_phone").focus();throw new Error("رقم الهاتف: 10 أرقام تبدأ بـ 05 أو 06 أو 07")}
+    if($("#l_due").value&&$("#l_due").value<($("#l_out").value||today())) throw new Error("تاريخ الإرجاع قبل تاريخ الإعارة");
+    await api("lend",{num,borrower:$("#l_who").value,phone:phoneDigits($("#l_phone").value),role:$("#l_role").value,out:$("#l_out").value,due:$("#l_due").value,note:$("#l_note").value},true);
     if(S.fromReq){try{await api("setRequest",{id:S.fromReq,status:"سُلّم"},true)}catch{};S.fromReq=null}
     closeSheet(); toast("سُجّلت الإعارة"); await refresh(); openBook(num);
   });
