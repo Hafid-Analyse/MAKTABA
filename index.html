@@ -285,6 +285,13 @@ body.guest .app{padding-bottom:40px}
 .fc .lent .hint{color:rgba(255,255,255,.75)}
 @media (prefers-reduced-motion:reduce){.fc-in{transition:none}}
 .mres{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.pv{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:15;display:flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,var(--violet-1),var(--violet-2));color:#fff;border-radius:999px;padding:8px 8px 8px 16px;padding-inline-start:16px;box-shadow:0 16px 30px -12px var(--violet-2);font-size:13px;white-space:nowrap}
+.pv button{border:0;border-radius:999px;background:#fff;color:var(--violet-2);font-weight:600;padding:7px 14px}
+body.preview .app{padding-bottom:90px}
+.linkbox{display:flex;align-items:center;gap:8px;background:var(--soft);box-shadow:var(--sh-in);border-radius:16px;padding:10px 12px;margin-top:12px}
+.linkbox code{flex:1;min-width:0;direction:ltr;text-align:left;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bigqr{margin:16px auto 4px;width:max-content;background:#fff;padding:14px;border-radius:24px;box-shadow:var(--sh-md);line-height:0}
 .seg{display:inline-flex;gap:4px;background:var(--soft);box-shadow:var(--sh-in);border-radius:999px;padding:4px}
 .seg button{border:0;background:transparent;color:var(--muted);width:36px;height:30px;border-radius:999px;display:grid;place-items:center}
 .seg button .ico{width:18px;height:18px}
@@ -358,6 +365,9 @@ dd.code{text-align:right}
     <symbol id="i-exit" viewBox="0 0 24 24"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"/></symbol>
     <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
     <symbol id="i-rows" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4.5" rx="2"/><rect x="3" y="10" width="18" height="4.5" rx="2"/><rect x="3" y="16" width="18" height="4.5" rx="2"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="13" height="13" rx="3"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></symbol>
     <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
     <symbol id="i-back" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
   </defs>
@@ -385,7 +395,7 @@ dd.code{text-align:right}
 
 <script>
 /* ================= الحالة ================= */
-const S = { settings:null, books:[], loans:null, view:"catalog", q:"", status:"", cat:"", user:null, pin:null, scanner:null, installEvt:null, offline:false, reqs:null, fromReq:null, layout:"grid" };
+const S = { settings:null, books:[], loans:null, view:"catalog", q:"", status:"", cat:"", user:null, pin:null, scanner:null, installEvt:null, offline:false, reqs:null, fromReq:null, layout:"grid", preview:false };
 try{ if(localStorage.getItem("lib_layout")==="rows") S.layout="rows" }catch{}
 try{ const a=JSON.parse(localStorage.getItem("lib_auth")||"null"); if(a){S.user=a.user;S.pin=a.pin} }catch{}
 
@@ -395,7 +405,7 @@ const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth
 const addDays=(s,n)=>{const d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
 const days=(a,b)=>Math.round((new Date(b+"T12:00:00")-new Date(a+"T12:00:00"))/864e5);
 const fmt=s=>{if(!s)return"";const[y,m,d]=s.split("-");return `${+d}/${+m}/${y}`};
-const staff=()=>!!S.user;
+const staff=()=>!!S.user&&!S.preview;
 const bookUrl=n=>(S.settings?.appUrl||location.origin+location.pathname)+"?b="+encodeURIComponent(n);
 const icon=(id,cls="ico")=>`<svg class="${cls}"><use href="#i-${id}"/></svg>`;
 const PALS=["c-blue","c-violet","c-green","c-sun"];
@@ -456,7 +466,8 @@ function chrome(){
   $("#sub").textContent=staff()?`أدِر ${name}`:`فهرس ${name}`;
   const w=$("#whoBtn"); w.hidden=!staff(); w.innerHTML=staff()?`${esc(initial(S.user))}<span class="plus">✓</span>`:"";
   document.querySelectorAll("[data-staff]").forEach(b=>b.hidden=!staff());
-  $(".dock").hidden=!staff(); document.body.classList.toggle("guest",!staff());
+  $(".dock").hidden=!staff(); document.body.classList.toggle("guest",!staff()); document.body.classList.toggle("preview",S.preview);
+  let pv=$("#pvBar"); if(S.preview&&!pv){pv=document.createElement("div");pv.id="pvBar";pv.className="pv";pv.innerHTML=`${icon("eye")}<span>تشاهد المكتبة كزائر</span><button id="exitPreview">رجوع لوضع الأمين</button>`;document.body.appendChild(pv)} else if(!S.preview&&pv) pv.remove();
   document.querySelectorAll(".dk").forEach(b=>b.setAttribute("aria-current",b.dataset.v===S.view||(S.view==="labels"||S.view==="reports"||S.view==="reqs")&&b.dataset.v==="more"));
 }
 function render(){
@@ -708,6 +719,25 @@ function returnSheet(num){
     <div class="actions"><button class="btn c-green" type="submit">تأكيد الإرجاع</button><button class="btn flat" type="button" data-close>إلغاء</button></div>
   </form>`);
 }
+const siteUrl=()=>S.settings?.appUrl||location.origin+location.pathname;
+function shareSheet(){
+  const u=siteUrl();
+  sheet(`<div class="hero c-blue"><span class="ic">${icon("share")}</span><div class="tx"><h2>رابط ${esc(S.settings.name)}</h2><p class="by">أرسله للأولياء، أو اطبع الكود وعلّقه عند باب المكتبة. من يفتحه يرى الفهرس كزائر.</p></div></div>
+  <div class="linkbox"><code>${esc(u)}</code><button class="btn sm c-blue" id="copyLink">${icon("copy")}نسخ</button></div>
+  <div class="bigqr" id="siteQr"></div>
+  <div class="actions" style="justify-content:center">${navigator.share?`<button class="btn c-green" id="nativeShare">${icon("share")}إرسال</button>`:""}<button class="btn soft" id="dlQr">تحميل صورة الكود</button><button class="btn flat" data-close>إغلاق</button></div>`);
+  const el=$("#siteQr"); if(typeof QRCode!=="undefined") new QRCode(el,{text:u,width:220,height:220,correctLevel:QRCode.CorrectLevel.M});
+}
+function qrPoster(){
+  const src=$("#siteQr canvas")||$("#siteQr img"); if(!src) return null;
+  const c=document.createElement("canvas"),W=600,H=760,x=c.getContext("2d");c.width=W;c.height=H;
+  x.fillStyle="#fff";x.fillRect(0,0,W,H);x.fillStyle="#172033";x.textAlign="center";x.direction="rtl";
+  x.font="700 40px 'Readex Pro',Tajawal,sans-serif";x.fillText(S.settings.name,W/2,80);
+  x.font="400 24px 'Readex Pro',Tajawal,sans-serif";x.fillStyle="#5d6676";x.fillText("امسح الكود لتصفّح الكتب وطلب الاستعارة",W/2,124);
+  x.imageSmoothingEnabled=false;x.drawImage(src,90,160,420,420);
+  let fs=20;x.direction="ltr";do{x.font=`400 ${fs}px ui-monospace,monospace`;fs--}while(fs>9&&x.measureText(siteUrl()).width>W-40);x.fillText(siteUrl(),W/2,640);
+  return c;
+}
 function requestSheet(num){
   const b=S.books.find(x=>x.num===num); if(!b) return;
   sheet(`<div class="hero ${catPal(b.category)}"><span class="ic">${esc(initial(b.title))}</span><div class="tx"><h2>طلب «${esc(b.title)}»</h2><span class="code" data-num>${esc(num)}</span>${b.author?`<p class="by">${esc(b.author)}</p>`:""}</div></div>
@@ -753,6 +783,7 @@ function loginSheet(){
 function moreSheet(){
   const t=(v,cls,ic,l)=>`<button class="tile ${cls}" ${v}><span class="ring">${icon(ic)}</span><b>${l}</b></button>`;
   sheet(`<div class="sechead" style="margin-top:0"><h2>المزيد</h2></div><div class="more">
+    ${t('id="shareLink"',"c-blue","share","مشاركة الرابط")}${t('id="viewGuest"',"c-violet","eye","عرض كزائر")}
     ${t('data-v="reqs"',"c-green","user","الطلبات").replace("</button>",newReqs()?`<span class="cnt">${newReqs()}</span></button>`:"</button>")}${t('data-v="labels"',"c-sun","label","الملصقات")}${t('data-v="reports"',"c-blue","chart","التقارير")}${t('id="doLogout"',"c-violet","exit","خروج")}</div>`);
 }
 function logout(){S.user=S.pin=null;S.loans=null;try{localStorage.removeItem("lib_auth")}catch{};S.view="catalog";render()}
@@ -795,11 +826,17 @@ async function busy(form,fn){form.classList.add("loading");try{await fn()}catch(
 const sheetNum=f=>f.closest(".sheet").querySelector("[data-num]").textContent;
 
 document.addEventListener("click",async e=>{
-  const t=e.target.closest("[data-v],[data-open],[data-status],[data-cat],[data-close],[data-lend],[data-return],[data-qrshow],[data-due],[data-req],[data-rq],[data-rqlend],[data-flip],[data-expand],[data-layout],[data-pick],#whoBtn,#themeBtn,#doLogout,#l_print,#l_today,#doInstall,#noInstall");
+  const t=e.target.closest("[data-v],[data-open],[data-status],[data-cat],[data-close],[data-lend],[data-return],[data-qrshow],[data-due],[data-req],[data-rq],[data-rqlend],[data-flip],[data-expand],[data-layout],[data-pick],#whoBtn,#themeBtn,#doLogout,#shareLink,#viewGuest,#exitPreview,#copyLink,#nativeShare,#dlQr,#l_print,#l_today,#doInstall,#noInstall");
   if(!t) return; const d=t.dataset;
   if(d.req){requestSheet(d.req);return}
   if(d.rq){try{await api("setRequest",{id:d.rq,status:d.st},true);toast("الطلب: "+d.st);await loadLoans();render()}catch(err){toast(err.message,true)}return}
   if(d.rqlend){const r=S.reqs.find(x=>x.id===d.rqlend);lendSheet(r.num,{who:r.name,phone:r.phone,role:r.forWho,reqId:r.id});return}
+  if(t.id==="shareLink"){shareSheet();return}
+  if(t.id==="viewGuest"){closeSheet();S.preview=true;S.view="catalog";render();scrollTo({top:0});toast("هكذا يرى الزوار المكتبة");return}
+  if(t.id==="exitPreview"){S.preview=false;render();toast("عدت إلى وضع الأمين");return}
+  if(t.id==="copyLink"){const u=siteUrl();try{await navigator.clipboard.writeText(u);toast("نُسخ الرابط")}catch{const r=document.createRange();r.selectNodeContents($(".linkbox code"));getSelection().removeAllRanges();getSelection().addRange(r);toast("حدّد الرابط وانسخه يدوياً")}return}
+  if(t.id==="nativeShare"){try{await navigator.share({title:S.settings.name,text:"تصفّح كتب "+S.settings.name+" واطلب الاستعارة:",url:siteUrl()})}catch{}return}
+  if(t.id==="dlQr"){const c=qrPoster();if(!c)return toast("تعذّر تجهيز الصورة",true);const a=document.createElement("a");a.download="qr-"+S.settings.name+".png";a.href=c.toDataURL("image/png");document.body.appendChild(a);a.click();a.remove();return}
   if(d.flip!==undefined){t.classList.toggle("flip");return}
   if(d.expand!==undefined){const r=t.closest(".rw"),o=r.classList.toggle("open");t.setAttribute("aria-expanded",o);return}
   if(d.layout){S.layout=d.layout;try{localStorage.setItem("lib_layout",d.layout)}catch{};render();return}
