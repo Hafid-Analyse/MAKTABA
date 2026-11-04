@@ -235,6 +235,7 @@ button{cursor:pointer}
 .callout.violet{background:linear-gradient(150deg,var(--violet-1),var(--violet-2));color:#fff;box-shadow:0 16px 28px -14px var(--violet-2)}
 .callout.sun{background:linear-gradient(150deg,var(--sun-1),var(--sun-2));color:#fff;box-shadow:0 16px 28px -14px var(--sun-2)}
 .hist{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.btn.del{color:var(--rose)}.btn.del.armed{background:var(--rose);color:#fff}.hist .h .del{padding:4px 10px;font-size:12px;min-height:0}
 .hist .h{background:var(--card);border-radius:18px;box-shadow:var(--sh-md);padding:10px 14px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px}
 .hist .h small{color:var(--muted)}
 .qrbox{margin-top:14px;display:flex;gap:14px;align-items:center;background:var(--card);border-radius:var(--r-md);box-shadow:var(--sh-md);padding:12px}
@@ -709,7 +710,7 @@ function outView(){
       <div class="tx"><b>${esc(l.title)}</b> <span class="code" style="color:var(--muted)">${esc(l.num)}</span>
         <p>عند <b style="color:var(--ink)">${esc(l.borrower)}</b>${l.role?" · "+esc(l.role):""}${l.phone?` · <span dir="ltr">${esc(l.phone)}</span>`:""}</p>
         <p>خرج ${fmt(l.out)} على يد ${esc(l.by)} · ${isLate?"كان موعده "+fmt(l.due):"يعود "+fmt(l.due)}</p></div>
-      <button class="btn sm c-green" data-return="${esc(l.num)}">إرجاع</button></div>`}).join("")}</div>`;
+      <div style="display:flex;flex-direction:column;gap:6px"><button class="btn sm c-green" data-return="${esc(l.num)}">إرجاع</button><button class="btn sm flat del" data-delloan="${esc(l.id)}" data-num="${esc(l.num)}">حذف</button></div></div>`}).join("")}</div>`;
 }
 function opts(arr,sel){return (arr||[]).map(x=>`<option ${x===sel?"selected":""}>${esc(x)}</option>`).join("")}
 function dl(id,vals){return `<datalist id="${id}">${[...new Set(vals.filter(Boolean))].map(v=>`<option value="${esc(v)}">`).join("")}</datalist>`}
@@ -967,7 +968,7 @@ function bookCard(b,open,hist,loading){
   ${loading&&staff()?`<p class="by" style="margin-top:12px">جارٍ جلب السجل…</p>`:""}
   <div class="actions">${act}${!staff()&&(b.status==="متوفر"||b.status==="معار")?`<button class="btn ${catPal(b.category)}" data-req="${esc(b.num)}">اطلب هذا الكتاب</button>`:""}${staff()?`<button class="btn soft" data-qrshow="${esc(b.num)}">${icon("scan")}الكود</button>`:""}<button class="btn flat" data-close>إغلاق</button></div>
   <div id="qrSlot"></div>
-  ${hist&&hist.length?`<h3>سجل الإعارة</h3><div class="hist">${hist.map(h=>`<div class="h"><span><b>${esc(h.borrower)}</b><br><small>أعاره ${esc(h.by)}${h.recvBy?" · استلمه "+esc(h.recvBy):""}</small></span><span style="text-align:end">${fmt(h.out)} ← ${h.ret?fmt(h.ret):"لم يعد"}<br><small>${h.ret?days(h.out,h.ret)+" يوم"+(h.cond&&h.cond!=="سليم"?" · "+esc(h.cond):""):""}</small></span></div>`).join("")}</div>`:""}`;
+  ${hist&&hist.length?`<h3>سجل الإعارة</h3><div class="hist">${hist.map(h=>`<div class="h"><span><b>${esc(h.borrower)}</b><br><small>أعاره ${esc(h.by)}${h.recvBy?" · استلمه "+esc(h.recvBy):""}</small></span><span style="text-align:end">${fmt(h.out)} ← ${h.ret?fmt(h.ret):"لم يعد"}<br><small>${h.ret?days(h.out,h.ret)+" يوم"+(h.cond&&h.cond!=="سليم"?" · "+esc(h.cond):""):""}</small></span>${staff()&&h.id?`<button class="btn sm flat del" data-delloan="${esc(h.id)}" data-num="${esc(h.num||b.num)}">حذف</button>`:""}</div>`).join("")}</div>`:""}`;
 }
 function lendSheet(num,pre){
   pre=pre||{}; S.fromReq=pre.reqId||null;
@@ -1050,6 +1051,7 @@ function reqsView(){
       ${r.status==="جديد"?`<button class="btn sm c-green" data-rq="${esc(r.id)}" data-st="مقبول">قبول</button><button class="btn sm flat" data-rq="${esc(r.id)}" data-st="مرفوض">رفض</button>`:""}
       ${r.status==="مقبول"&&bk&&bk.status==="متوفر"?`<button class="btn sm c-blue" data-rqlend="${esc(r.id)}">إعارة الآن</button>`:""}
       ${r.status==="مقبول"?`<button class="btn sm flat" data-rq="${esc(r.id)}" data-st="مرفوض">إلغاء</button>`:""}
+      <button class="btn sm flat del" data-delreq="${esc(r.id)}">حذف</button>
     </div></div>`}).join("")}</div>`;
 }
 function loginSheet(){
@@ -1105,10 +1107,18 @@ async function busy(form,fn){form.classList.add("loading");try{await fn()}catch(
 const sheetNum=f=>f.closest(".sheet").querySelector("[data-num]").textContent;
 
 document.addEventListener("click",async e=>{
-  const t=e.target.closest("[data-v],[data-open],[data-status],[data-cat],[data-close],[data-lend],[data-return],[data-qrshow],[data-due],[data-req],[data-rq],[data-rqlend],[data-for],[data-months],[data-flip],[data-expand],[data-layout],[data-pick],#whoBtn,#themeBtn,#doLogout,#dlTpl,#doExport,[data-imode],#impCancel,#doImport,#printBatch,#shareLink,#viewGuest,#exitPreview,#copyLink,#nativeShare,#dlQr,#l_print,#l_today,#doInstall,#noInstall");
+  const t=e.target.closest("[data-v],[data-open],[data-status],[data-cat],[data-close],[data-lend],[data-return],[data-qrshow],[data-due],[data-req],[data-rq],[data-rqlend],[data-delreq],[data-delloan],[data-for],[data-months],[data-flip],[data-expand],[data-layout],[data-pick],#whoBtn,#themeBtn,#doLogout,#dlTpl,#doExport,[data-imode],#impCancel,#doImport,#printBatch,#shareLink,#viewGuest,#exitPreview,#copyLink,#nativeShare,#dlQr,#l_print,#l_today,#doInstall,#noInstall");
   if(!t) return; const d=t.dataset;
   if(d.req){requestSheet(d.req);return}
   if(d.rq){try{await api("setRequest",{id:d.rq,status:d.st},true);toast("الطلب: "+d.st);await loadLoans();render()}catch(err){toast(err.message,true)}return}
+  if(d.delreq||d.delloan){
+    if(!t.classList.contains("armed")){t.classList.add("armed");t.dataset.txt=t.textContent;t.textContent="اضغط للتأكيد";clearTimeout(t._tm);t._tm=setTimeout(()=>{t.classList.remove("armed");t.textContent=t.dataset.txt},3000);return}
+    clearTimeout(t._tm);t.disabled=true;
+    try{
+      if(d.delreq){await api("deleteRequest",{id:d.delreq},true);toast("حُذف الطلب");await loadLoans();render()}
+      else{const j=await api("deleteLoan",{id:d.delloan},true);const bk=S.books.find(x=>x.num===d.num);if(j.wasOpen&&bk&&bk.status==="معار")bk.status="متوفر";toast(j.wasOpen?"حُذفت الإعارة وعاد الكتاب متوفراً":"حُذفت الإعارة من السجل");await loadLoans();if(t.closest(".hist"))openBook(d.num);else render()}
+    }catch(err){t.disabled=false;toast(err.message,true)}
+    return}
   if(d.rqlend){const r=S.reqs.find(x=>x.id===d.rqlend);lendSheet(r.num,{who:r.name,phone:r.phone,role:r.forWho&&r.forWho!=="لنفسه"?"لـ "+r.forWho:"",reqId:r.id});return}
   if(t.id==="dlTpl"){try{await downloadTemplate()}catch(err){toast(err.message,true)}return}
   if(t.id==="doExport"){try{await exportAll()}catch(err){toast(err.message,true)}return}

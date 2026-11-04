@@ -281,6 +281,23 @@ begin
     perform _ping('request');
     return jsonb_build_object('ok', true, 'status', r.status);
 
+  -- ---------- الحذف (للأمين) ----------
+  elsif p_action = 'deleteRequest' then
+    delete from requests where id = p->>'id' returning * into r;
+    if not found then raise exception 'الطلب غير موجود'; end if;
+    perform _ping('request');
+    return jsonb_build_object('ok', true);
+
+  elsif p_action = 'deleteLoan' then
+    delete from loans where id = p->>'id' returning * into l;
+    if not found then raise exception 'الإعارة غير موجودة'; end if;
+    -- إعارة مفتوحة حُذفت: يرجع الكتاب متوفراً إن لم تبق له إعارة مفتوحة أخرى
+    if l.ret_date is null and not exists (select 1 from loans where num = l.num and ret_date is null) then
+      update books set status = 'متوفر', updated_at = now() where num = l.num and status = 'معار';
+    end if;
+    perform _ping('loan');
+    return jsonb_build_object('ok', true, 'wasOpen', l.ret_date is null);
+
   -- ---------- الاستيراد من الإكسل ----------
   -- mode: add (إضافة فقط) | upsert (إضافة وتحديث) | replace (استبدال كامل)
   elsif p_action = 'import' then

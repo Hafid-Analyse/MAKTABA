@@ -1,6 +1,6 @@
 /* عامل الخدمة: يجعل التطبيق يفتح بسرعة ويعمل دون اتصال.
    عند تعديل index.html غيّر رقم الإصدار هنا ليحصل الجميع على النسخة الجديدة. */
-const VERSION = "maktaba-v9";
+const VERSION = "maktaba-v10";
 const SHELL = [
   "./", "./index.html", "./manifest.webmanifest",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png",
